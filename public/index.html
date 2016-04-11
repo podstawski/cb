@@ -12,12 +12,12 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="ROOT Admin - UI Admin Kit Powered by Bootstrap 4">
-        <meta name="author" content="Lukasz Holeczek">
-        <meta name="keyword" content="ROOT Admin - UI Admin Kit Powered by Bootstrap 4">
-        <!-- <link rel="shortcut icon" href="assets/ico/favicon.png"> -->
+        
+        <link rel="shortcut icon" href="favicon.ico"> 
         <title>ROOT Admin - UI Admin Kit</title>
         <!-- Main styles for this application -->
         <link href="assets/css/style.css" rel="stylesheet">
+		<link href="assets/css/cb.css" rel="stylesheet">
     </head>
     <!-- BODY options, add following classes to body to change options
 		1. 'compact-nav'     	  - Switch sidebar to minified version (width 50px)
@@ -28,8 +28,8 @@
 		3. 'fixed-nav'			  - Fixed navigation
 		4. 'navbar-fixed'		  - Fixed navbar
 	-->
-    <body class="navbar-fixed sidebar-nav fixed-nav">
-        <header class="navbar">
+    <body class="navbar-fixed sidebar-off-canvas fixed-nav">
+        <header class="navbar after-login">
             <div class="container-fluid">
                 <button class="navbar-toggler mobile-toggler hidden-lg-up" type="button">&#9776;</button>
                 <a class="navbar-brand" href="#"></a>
@@ -38,7 +38,7 @@
                         <a class="nav-link navbar-toggler layout-toggler" href="#">&#9776;</a>
                     </li>
                     <li class="nav-item p-x-1">
-                        <a class="nav-link" href="#">Dashboard</a>
+                        <a class="nav-link" href="dashboard.html">Dashboard</a>
                     </li>
                     <li class="nav-item p-x-1">
                         <a class="nav-link" href="#">Users</a>
@@ -76,7 +76,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                             <img src="assets/img/avatars/6.jpg" class="img-avatar" alt="admin@bootstrapmaster.com">
-                            <span class="hidden-md-down">admin</span>
+                            <span class="hidden-md-down" id="username">admin</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
                             <div class="dropdown-header text-xs-center">
@@ -95,7 +95,7 @@
                             <a class="dropdown-item" href="#"><i class="fa fa-file"></i> Projects<span class="label label-primary">42</span></a>
                             <div class="divider"></div>
                             <a class="dropdown-item" href="#"><i class="fa fa-shield"></i> Lock Account</a>
-                            <a class="dropdown-item" href="#"><i class="fa fa-lock"></i> Logout</a>
+                            <a class="dropdown-item" href="#" id="logout"><i class="fa fa-lock"></i> Logout</a>
                         </div>
                     </li>
                     <li class="nav-item">
@@ -153,7 +153,7 @@
                         Dashboard
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="main.html"><i class="icon-speedometer"></i> DASHBOARD <span class="label label-info">NEW</span></a>
+                        <a class="nav-link" href="dashboard.html"><i class="icon-speedometer"></i> DASHBOARD <span class="label label-info">NEW</span></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="main2.html"><i class="icon-speedometer"></i> DASHBOARD 2 </a>
@@ -442,10 +442,10 @@
         <!-- Main content -->
         <main class="main">
             <!-- Page Header -->
-            <div class="page-header">
+            <div class="page-header after-login">
                 <div class="row">
                     <div class="col-md-7">
-                        <h1 class="h2 page-title">aaa</h1>
+                        <h1 class="h2 page-title"></h1>
                         <div class="text-muted page-desc"></div>
                     </div>
                     <div class="col-md-5 charts">
@@ -482,7 +482,7 @@
                 </div>
             </div>
             <!-- Breadcrumb -->
-            <ol class="breadcrumb">
+            <ol class="breadcrumb after-login">
                 <li><a href="#">Home</a></li>
                 <li><a href="#">Library</a></li>
                 <li class="active">Data</li>
@@ -793,12 +793,15 @@
         <script src="assets/js/libs/Chart.min.js"></script>
         <script src="assets/js/views/shared.js"></script>
 		<script src="assets/js/libs/toastr.min.js"></script>
-        <!-- GenesisUI main scripts -->
-        <script src="assets/js/app.js"></script>
-		
+        
 		<!-- ControlBy scripts -->
 		<script src="/socket.io/socket.io.js"></script>
         <script src="assets/js/controlby.js"></script>
+
+		<!-- GenesisUI main scripts -->
+        <script src="assets/js/app.js"></script>
+		
+
         
         
     </body>
