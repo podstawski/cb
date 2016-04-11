@@ -13309,7 +13309,7 @@ body:not(.top-nav) .sidebar {
     bottom: 0;
     left: 0;
     width: 200px;
-    height: 89px;
+    height: 55px;
     padding: 10px 0 0;
     overflow: visible;
     background: rgba(0, 0, 0, 0.2); }
@@ -13333,7 +13333,7 @@ body:not(.top-nav) .sidebar {
             font-size: 10px; }
       body:not(.top-nav) .sidebar .sidebar-footer ul.sidebar-footer-menu .dropdown-menu {
         position: fixed;
-        bottom: 85px;
+        bottom: 55px;
         left: 5px;
         width: 190px;
         overflow: hidden;

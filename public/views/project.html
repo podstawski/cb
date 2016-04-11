@@ -1,0 +1,70 @@
+<script>
+    loadJS([], "assets/js/views/project.js");
+</script>
+
+<div id="current-title" hidden>Project</div>
+<div id="current-desc" hidden>add new project</div>
+
+<div class="animated fadeIn" id="project">
+    <input type="hidden" name="id" value="0"/>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <strong>Project</strong> attributes
+                </div>
+                <div class="card-block">
+                    <div class="form-group row">
+                        <label class="col-md-3 form-control-label" for="text-input">Project name</label>
+                        <div class="col-md-9">
+                            <input type="text" name="name" class="form-control" placeholder="Name">
+                            <span class="help-block">Short name of the project</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-md-3 form-control-label" for="text-input">Project description</label>
+                        <div class="col-md-9">
+                            <input type="text" name="desc" class="form-control" placeholder="Description">
+                            <span class="help-block">Short description of the project</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <strong>Project image</strong> 
+                </div>            
+                <div class="card-block">
+                    <div class="form-group row">
+                        <label class="col-md-3 form-control-label" for="img-input">
+                            <img id="img_img" class="project-avatar"/>
+                        </label>
+                        <div class="col-md-9">
+                            <input type="file" id="img-input" name="img" accept="image/*" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            
+            <div class="form-actions">
+                <button type="submit" id="save-project" class="btn btn-primary">Save changes</button>
+            
+            </div>        
+        </div>
+    </div>
+    
+</div>
+                    
+
+

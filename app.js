@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
-
 var crypto = require('crypto');
+var model = require('./jsonmodel');
 
 app.use(express.static('public'));
 
@@ -11,7 +11,13 @@ var io = require('socket.io').listen(app.listen(3000, function () {
 }));
 
 
+var data={};
 var session=[];
+
+data.projects = new model('./data/projects',['id']);
+data.projects.init();
+
+
 
 function parseCookies (rc) {
     var list = {};
@@ -23,6 +29,14 @@ function parseCookies (rc) {
 
     return list;
 }
+
+function md5(txt) {
+  var md5sum = crypto.createHash('md5');
+  md5sum.update(txt);
+  return md5sum.digest('hex');
+}
+
+
 
 io.sockets.on('connection', function (socket) {
   var hash='#';
@@ -47,9 +61,7 @@ io.sockets.on('connection', function (socket) {
   
   socket.on('login',function (data) {
     
-    var md5sum = crypto.createHash('md5');
-    md5sum.update(data.username + new Date());
-    hash=md5sum.digest('hex');
+    hash=md5(data.username + new Date());
     
     if (data.username==data.password) {
       session[hash]=data;

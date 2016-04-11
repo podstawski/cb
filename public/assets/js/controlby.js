@@ -16,7 +16,6 @@ websocket.on('cookie',function(cn,cv) {
 });
 
 websocket.on('login',function(data) {
-    console.log(data);
     $('#username').text(data.username);
     $('.after-login').removeClass('after-login').addClass('_after-login');
     $('body').addClass('sidebar-nav').removeClass('sidebar-off-canvas');
@@ -40,7 +39,7 @@ $(function(){
         var loadPageParent = window.loadPage;
         
         window.loadPage = function(url) {
-            console.log(url);
+            //console.log(url);
             loadPageParent(url);        
         }
     
