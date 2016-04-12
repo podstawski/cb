@@ -2,8 +2,29 @@
     display: none !important;
 }
 
-.project-avatar {
-    width: 80px;
+.project-avatar,
+body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
+    width: 120px;
     margin: 20px auto 10px;
-    border-radius: 50em;
+    border-radius: 50%;
+}
+
+.add-item {
+    text-align: right;
+}
+
+.add-item a {
+    background-color: #20a8d8;
+    border-radius: 50%;
+    padding: 1.5em;
+    display: inline-block;
+}
+
+.add-item a:hover {
+    text-decoration: none;
+}
+
+.add-item a i {
+    color: white;
+    font-size: 3em;
 }

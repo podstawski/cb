@@ -25,26 +25,42 @@ var Model = function(file,index,logger) {
     if (logger==null) logger=console;
     
     var createIndex = function (data) {
-        var idx=[];
-        for (var i=0;i<index.length;i++) {
-            idx.push(data[index[i]]);
+        var ret;
+        if (typeof(data)=='object') {   
+            var idx=[];
+            for (var i=0;i<index.length;i++) {
+                idx.push(data[index[i]]);
+            }
+            ret=idx.join();
+        } else {
+            ret=data;
         }
-        return idx.join();
-    }
+        
+        if (ret.length>0 && !isNaN(ret)) {
+            ret='_'+ret;
+        }
+        
+        return ret;
+    };
+    
+    var getData=function() {
+        var d=[];
+        for (var k in data) d.push(data[k]);
+        return d;        
+    };
     
     this.save = function() {
 
         if (saveState) return;
         if (lastSave>lastSet) return;
+        if (lastSet==0) return;
         
         saveState=true;
         
-        var d=[];
-        for (var k in data) d.push(data[k]);
         
         var bak=file+'.bak';
         fs.renameSync(file, bak);
-        fs.writeFileSync(file,JSON.stringify(d));
+        fs.writeFileSync(file,JSON.stringify(getData()));
         
         logger.log("Saved "+file,'db');
         fs.unlink(bak);
@@ -57,14 +73,16 @@ var Model = function(file,index,logger) {
         try {
             var json = JSON.parse(d);
             
-            data=[];
+            data={};
             for (var i=0;i<json.length;i++) {
                 data[createIndex(json[i])] = json[i];
             }
+
             lastSave=Date.now();
         } catch (e) {
             logger.log('Data parse error in '+file+', '+e,'db');
-        }        
+        }
+        
     }
     
     
@@ -75,7 +93,7 @@ var Model = function(file,index,logger) {
                 if (error) {
                     fs.readFile(file+'.bak',function(error,d) {
                         if (error) {
-                            data=[];
+                            data={};
                             fs.closeSync(fs.openSync(file, 'w'));
                         } else {
                             open(d);
@@ -90,13 +108,15 @@ var Model = function(file,index,logger) {
         },
         
         getAll: function() {
-            return data;    
+            var ret={recordsTotal:0,data:getData()};
+            ret.recordsTotal=ret.data.length;
+            return ret;    
         },
         
         get: function(idx) {
-            if (typeof(idx)=='object') {
-                idx=createIndex(idx);
-            }
+            
+            idx=createIndex(idx);
+            
             if (typeof(data[idx])=='undefined') return null;
             
             return data[idx];
@@ -122,16 +142,24 @@ var Model = function(file,index,logger) {
             }
             
             if (anythingChanged) lastSet=Date.now();
+            
+            return data[idx];
+        },
+        
+        count: function() {
+            return  Object.keys(data).length;
         },
         
         add: function(d) {
             idx=createIndex(d);
             
-            if (idx.length==0 && index.length==1) {
-                d[index[0]]=data.length+1;
+            var i=Object.keys(data).length+1;
+            while (idx.length==0 && index.length==1) {
+                d[index[0]]=i++;
                 idx=createIndex(d);
-                
+                if (typeof(data[idx])=='undefined') break;
             }
+           
             if (idx.length==0 ) return;
             data[idx]={};
    

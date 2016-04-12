@@ -28,47 +28,6 @@ $(function(){
         responsive: true,
     }
 
-    var data = {
-        labels: labels,
-        datasets: [
-            {
-                label: 'My First dataset',
-                fillColor: 'transparent',
-        		strokeColor : $.brandInfo,
-                data: data
-            },
-        ]
-    }
 
-    var ctx = $('#header-chart-1').get(0).getContext('2d');
-    var headerChart = new Chart(ctx).Line(data, options);
-
-    var data = {
-        labels: labels,
-        datasets: [
-            {
-                label: 'My First dataset',
-                fillColor: 'transparent',
-        		strokeColor : $.brandDanger,
-                data: data1
-            },
-        ]
-    };
-    var ctx = $('#header-chart-2').get(0).getContext('2d');
-    var headerChart2 = new Chart(ctx).Line(data, options);
-
-    var data = {
-        labels: labels,
-        datasets: [
-            {
-                label: 'My First dataset',
-                fillColor: 'transparent',
-        		strokeColor : $.brandSuccess,
-                data: data2
-            },
-        ]
-    };
-    var ctx = $('#header-chart-3').get(0).getContext('2d');
-    var headerChart3 = new Chart(ctx).Line(data, options);
 
 });

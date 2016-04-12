@@ -52,6 +52,9 @@
 		}
 
 		if (pageScript) {
+			
+			$('script[src="'+pageScript+'"]').remove();
+			
 			var body = document.getElementsByTagName('body')[0];
 			var script = document.createElement('script');
 			script.type = 'text/javascript';
@@ -107,6 +110,8 @@
 * Load pages asynchronously in ajax mode
 */
 
+
+
 if ($.ajaxLoad) {
 
 	paceOptions = {
@@ -121,7 +126,7 @@ if ($.ajaxLoad) {
 	} else {
 		setUpUrl($.defaultPage);
 	}
-
+	
 	$(document).on('click', '.nav a[href!="#"]', function(e) {
 		if ( $(this).parent().parent().hasClass('nav-tabs') || $(this).parent().parent().hasClass('nav-pills') ) {
 			e.preventDefault();
@@ -147,19 +152,23 @@ if ($.ajaxLoad) {
 
 function setUpUrl(url) {
 
-	$('.nav li .nav-link').removeClass('active');
+	$('.nav-link').removeClass('active');
 	$('.nav li.nav-dropdown').removeClass('open');
 	$('.nav li:has(a[href="' + url + '"])').addClass('open');
 	$('.nav a[href="' + url + '"]').addClass('active');
+	$('a.nav-link[href="' + url + '"]').addClass('active');
 
 	loadPage(url);
 }
 
 function loadPage(url) {
 
+	
+
+	var urla=url.split(',');
 	$.ajax({
 		type : 'GET',
-		url : $.subPagesDirectory + url,
+		url : $.subPagesDirectory + urla[0],
 		dataType : 'html',
 		cache : false,
 		async: false,
@@ -169,7 +178,8 @@ function loadPage(url) {
 		success : function() {
 			Pace.restart();
 			$('html, body').animate({ scrollTop: 0 }, 0);
-			$.mainContent.load($.subPagesDirectory + url, null, function (responseText) {
+			$.mainContent.load($.subPagesDirectory + urla[0], null, function (responseText) {
+
 				window.location.hash = url;
 				setUpTitle(url);
 			}).delay(250).animate({ opacity : 1 }, 0);

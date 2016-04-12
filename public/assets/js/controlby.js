@@ -1,38 +1,25 @@
 
 
-
-var websocket = io.connect();
-
-websocket.on('err',function(err,details) {
-    toastr.error(details, err, {
-        closeButton: true,
-        progressBar: true,
-    });
-});
-
-
-websocket.on('cookie',function(cn,cv) {
-    document.cookie=cn+'='+cv;
-});
-
-websocket.on('login',function(data) {
-    $('#username').text(data.username);
-    $('.after-login').removeClass('after-login').addClass('_after-login');
-    $('body').addClass('sidebar-nav').removeClass('sidebar-off-canvas');
-    loadPage('dashboard.html');
-});
-
 $('#logout').click(function () {
     websocket.emit('logout');
 });
 
-websocket.on('logout',function() {
-    $('#username').text('nobody');
-    $('._after-login').removeClass('_after-login').addClass('after-login');
-    $('body').removeClass('sidebar-nav').addClass('sidebar-off-canvas');
-    loadPage('main.html');
-});
 
+function setBreadcrumbs(b) {
+    $('.breadcrumb .breadcrumb-item').remove();
+    
+    var html='';
+    for(var i=0; i<b.length; i++) {
+        var a=i==b.length-1?' active':'';
+        html+='<li class="breadcrumb-item'+a+'"><a href="'+b[i].href+'">'+b[i].name+'</a></li>';
+    }
+    
+    $(html).insertAfter('.breadcrumb .breadcrumb-home');
+}
+
+
+
+/*
 $(function(){
     
     (function() {
@@ -46,3 +33,4 @@ $(function(){
     })();
 
 });
+*/
