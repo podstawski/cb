@@ -60,4 +60,25 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
 .project .form-actions {
     margin-left: 3px;
 }
+
+#left-sidebar .nav-dropdown-items li {
+    margin-left: 10px;
+}
+
+#floor-container {
+    overflow: hidden;
+    position: relative
+}
+
+#floor-container .draggable-container {
+    width: 100%;
+    position: relative;
+}
+
+#floor-container .svg {
+    position: absolute;
+    top:0;
+    left:0;
+    z-index: 10
+}
  

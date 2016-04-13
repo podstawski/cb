@@ -24,6 +24,8 @@ database.projects.init();
 database.structure = new model('./data/structure',['id']);
 database.structure.init();
 
+database.floor = new model('./data/floor',['id']);
+database.floor.init();
 
 function parseCookies (rc) {
     var list = {};

@@ -69,7 +69,13 @@ websocket.on('projects',function(data){
 
 websocket.on('structure',function(data){
     
-    $.smekta_file('views/smekta/sidebar-structure.html',data,'#left-sidebar');
-    $.smekta_file('views/smekta/project-structure.html',data,'#project-structure');
+    $.smekta_file('views/smekta/sidebar-structure.html',data,'#left-sidebar',function(){
+        $('#left-sidebar a.nav-dropdown-toggle').click(function(){
+            $(this).parent().toggleClass('open');
+        });
+    });
+    $.smekta_file('views/smekta/project-structure.html',data,'#project-structure',function(){
+        $('#project-structure .translate').translate();
+    });
    
 });

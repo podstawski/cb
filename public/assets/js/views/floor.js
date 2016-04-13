@@ -2,13 +2,6 @@
 $(function(){
     
     
-    toastr.info('Parter', 'Promienko', {
-        closeButton: true,
-        progressBar: true,
-    });
-    
-
-
     $('#s').css('left','330px');
     $('#s').css('top','460px');
     
@@ -20,15 +13,15 @@ $(function(){
     $('#s svg').css('height','270px');
     
     
-    $('#s').draggable();
+    //$('#s').draggable();
     
     
-    $('.svg').width($('#ctn').width());
+    $('.svg').width($('#floor-container .draggable-container').width());
     
-    $('#ctn').draggable();
+    $('#floor-container .draggable-container').draggable();
     
     
-    $('#ctn').bind('mousewheel', function(e){
+    $('#floor-container .draggable-container').bind('mousewheel', function(e){
         console.log(this);
         if(e.originalEvent.wheelDelta /120 > 0) {
             $(this).css('zoom',parseFloat($(this).css('zoom'))*1.1);

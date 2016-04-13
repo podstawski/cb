@@ -11,15 +11,7 @@
         stroke-width:3;
     }
     
-    #floor-container {
-        overflow: hidden;
-        position: relative
-    }
-    
-    #ctn {
-        width: 100%;
-        position: relative;
-    }
+
 </style>
 
 <script>
@@ -27,17 +19,15 @@
     loadJS(requireJS, "assets/js/views/floor.js");
 </script>
 
-<div id="current-title" hidden>Parter</div>
-<div id="current-desc" hidden>Promienko parter</div>
 
 
 <div id="floor-container" class="animated fadeIn">
-    <div id="ctn" class="draggable-container">
+    <div class="draggable-container">
        
-        <img class="svg" src="http://controlby.webkameleon.com/parter.svg" width="0" style="position: absolute; top:0; left:0; z-index: 10"/>
+        <img class="svg" width="0"/>
         
         
-        <div id="s">
+        <div id="s" style="display: none">
             <svg>
                 <polygon points="0,0 390,0 390,264 0,264"  />
             </svg>

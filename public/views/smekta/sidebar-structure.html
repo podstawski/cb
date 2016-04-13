@@ -1,13 +1,31 @@
 <ul class="nav">
 
     [loop:data]
-    <li class="nav-item">
-        
+    [if:!_sub]
+    <li class="nav-item">    
         [if:img]<a class="nav-link" href="floor.html,[id]"><i class="icon-magic-wand"></i>[endif:img]
         [if:!img]<a class="nav-link" href="#"><i class="icon-speedometer"></i>[endif:!img]    
         [name]
         [if:_new]<span class="label label-info">NEW</span>[endif:_new]</a>
     </li>
+    [endif:!_sub]
+    
+    [if:_sub]
+    
+    <li class="nav-item nav-dropdown">
+        <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-puzzle"></i> [name]</a>
+        <ul class="nav-dropdown-items">
+            [loop:_sub]
+            <li class="nav-item">    
+                [if:img]<a class="nav-link" href="floor.html,[id]"><i class="icon-magic-wand"></i>[endif:img]
+                [if:!img]<a class="nav-link" href="#"><i class="icon-speedometer"></i>[endif:!img]    
+                [name]
+                [if:_new]<span class="label label-info">NEW</span>[endif:_new]</a>
+            </li>
+            [endloop:_sub]
+        </ul>
+    </li>
+    [endif:_sub]
     [endloop:data]
 
 </ul>
