@@ -163,8 +163,6 @@ function setUpUrl(url) {
 
 function loadPage(url) {
 
-	
-
 	var urla=url.split(',');
 	$.ajax({
 		type : 'GET',
@@ -179,7 +177,7 @@ function loadPage(url) {
 			Pace.restart();
 			$('html, body').animate({ scrollTop: 0 }, 0);
 			$.mainContent.load($.subPagesDirectory + urla[0], null, function (responseText) {
-
+				$('#ui-view .translate').translate();
 				window.location.hash = url;
 				setUpTitle(url);
 			}).delay(250).animate({ opacity : 1 }, 0);

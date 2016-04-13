@@ -32,7 +32,7 @@ websocket.on('projects-all', function(pr) {
 });
 
 websocket.on('projects',function(data){
-      
+    
     for (var k in data) {
         if (k!='img') {
             $('#project input[name="'+k+'"]').val(data[k]);
@@ -46,10 +46,7 @@ websocket.on('projects',function(data){
         $('#img_img,.sidebar .sidebar-header .img-avatar').attr('src',data.img);
     }
     
-    toastr.info(data.desc, data.name, {
-        closeButton: true,
-        progressBar: true,
-    });
+
     
     var hash=window.location.hash;
     
@@ -58,7 +55,21 @@ websocket.on('projects',function(data){
         $('.page-desc').text(data.desc);
         
         setBreadcrumbs([{name: data.name, href:'project.html,'+data.id}]);
+
+        toastr.info(data.desc, data.name, {
+            closeButton: true,
+            progressBar: true,
+        });
+        
+        $('.project .add-item').show();
+
     }
     
 });
 
+websocket.on('structure',function(data){
+    
+    $.smekta_file('views/smekta/sidebar-structure.html',data,'#left-sidebar');
+    $.smekta_file('views/smekta/project-structure.html',data,'#project-structure');
+   
+});

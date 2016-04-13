@@ -24,23 +24,39 @@ var Model = function(file,index,logger) {
     
     if (logger==null) logger=console;
     
-    var createIndex = function (data) {
-        var ret;
-        if (typeof(data)=='object') {   
-            var idx=[];
-            for (var i=0;i<index.length;i++) {
-                idx.push(data[index[i]]);
-            }
-            ret=idx.join();
-        } else {
-            ret=data;
-        }
+    var indexElement = function (ret) {
         
-        if (ret.length>0 && !isNaN(ret)) {
-            ret='_'+ret;
+        if (typeof(ret)=='number' || !isNaN(parseInt(ret))) {
+            var len=String(ret).length;
+            var prefix='_';
+            for (var i=0;i<16-len;i++) {
+                prefix+='0';
+            }
+            ret=prefix+ret;
         }
         
         return ret;
+    }
+    
+    var createIndex = function (data,ia) {
+        if (ia==null) ia=index;
+        
+        if (typeof(data)=='object') {   
+            var idx=[];
+            for (var i=0;i<ia.length;i++) {
+                var element='_';
+                if (typeof(data[ia[i]])!='undefined') {
+                    element=indexElement(data[ia[i]]);
+                }
+                idx.push(element);
+            }
+            return idx.join();
+        } else {
+            return indexElement(data);
+        }
+        
+        
+        
     };
     
     var getData=function() {
@@ -77,13 +93,44 @@ var Model = function(file,index,logger) {
             for (var i=0;i<json.length;i++) {
                 data[createIndex(json[i])] = json[i];
             }
-
             lastSave=Date.now();
         } catch (e) {
             logger.log('Data parse error in '+file+', '+e,'db');
         }
         
+    };
+    
+    var condition = function (rec,where) {
+        if (where==null) where=[{}];
+        
+        for (var i=0;i<where.length;i++) {
+            var cond=true;
+            for (var c in where[i]) {
+                if (typeof(rec[c])=='undefined' && where[i][c]!=null) cond=false;
+                if (typeof(where[i][c])=='object' && where[i][c]!=null) {
+                    
+                } else {
+                    if (where[i][c]!=rec[c]) cond=false;
+                }
+            }
+            if (cond) return true;
+        }
+        
+        return false;
+        
     }
+    
+    
+    var max_element=function (element,where) {
+        var max=0;
+        for (var k in data) {
+            if (!condition(data[k],where)) continue;
+            if (typeof(data[k][element])!='undefined') if (data[k][element]>max) max=data[k][element];
+        }
+        return max;
+    }
+    
+    
     
     
     return {
@@ -114,12 +161,36 @@ var Model = function(file,index,logger) {
         },
         
         get: function(idx) {
-            
             idx=createIndex(idx);
-            
             if (typeof(data[idx])=='undefined') return null;
             
             return data[idx];
+        },
+        
+        select: function (where,order) {
+            var ret={};
+                        
+            for (var k in data) {    
+                if (condition(data[k],where)) {
+                    var idx=createIndex(data[k],order);
+                    if (typeof(ret[idx])=='undefined') ret[idx]=[]; 
+                    ret[idx].push(data[k]);
+                }
+            }
+            
+            ret2=[];
+            var keys=Object.keys(ret);
+            keys.sort();
+            for (i=0;i<keys.length;i++) {
+                for (var j=0;j<ret[keys[i]].length;j++) {
+                    ret2.push(ret[keys[i]][j]);
+                }
+            }
+            
+            var ret={recordsTotal:0,data:ret2};
+            ret.recordsTotal=ret.data.length;            
+            
+            return ret;
         },
         
         set: function(d,idx) {
@@ -152,12 +223,10 @@ var Model = function(file,index,logger) {
         
         add: function(d) {
             idx=createIndex(d);
-            
-            var i=Object.keys(data).length+1;
-            while (idx.length==0 && index.length==1) {
-                d[index[0]]=i++;
+     
+            if (idx=='_' && index.length==1) {
+                d[index[0]]=max_element(index[0])+1;
                 idx=createIndex(d);
-                if (typeof(data[idx])=='undefined') break;
             }
            
             if (idx.length==0 ) return;
@@ -174,6 +243,10 @@ var Model = function(file,index,logger) {
         
         index: function(data) {
             return createIndex(data);
+        },
+        
+        max: function(element,where) {
+            return max_element(element,where);  
         },
         
         ultimateSave: function () {
