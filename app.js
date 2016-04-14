@@ -146,7 +146,7 @@ io.sockets.on('connection', function (socket) {
   
   socket.on('login',function (data) {
     
-    if (data.username==data.password) {
+    if (data.username.length && data.username==data.password) {
       hash=md5(data.username + new Date());
       
       session[hash]={username:data.username, socket: socket};
