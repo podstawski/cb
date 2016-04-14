@@ -18,6 +18,7 @@
         'translate': function (txt,lang) {
             if (lang==null) lang=userLang;
         
+            txt=txt.trim();
             if (typeof(dictionary[lang])=='undefined') return txt;
             
             if (typeof(dictionary['en'][txt])=='undefined' && typeof(websocket)!='undefined') {
