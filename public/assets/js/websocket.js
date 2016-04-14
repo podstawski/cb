@@ -1,7 +1,7 @@
 var websocket = io.connect();
 
 websocket.on('err',function(err,details) {
-    toastr.error(details, err, {
+    toastr.error($.translate(details), $.translate(err), {
         closeButton: true,
         progressBar: true,
     });
