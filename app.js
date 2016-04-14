@@ -27,6 +27,10 @@ database.structure.init();
 database.floor = new model('./data/floor',['id']);
 database.floor.init();
 
+database.langs = new model('./data/langs',['label']);
+database.langs.init();
+
+
 function parseCookies (rc) {
     var list = {};
 

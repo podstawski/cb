@@ -19,6 +19,11 @@
             if (lang==null) lang=userLang;
         
             if (typeof(dictionary[lang])=='undefined') return txt;
+            
+            if (typeof(dictionary['en'][txt])=='undefined' && typeof(websocket)!='undefined') {
+                websocket.emit('db-save','langs',{label:txt});
+            };
+            
             if (typeof(dictionary[lang][txt])=='undefined') return txt;
             return dictionary[lang][txt];
         },
