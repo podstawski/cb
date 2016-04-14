@@ -81,4 +81,12 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
     left:0;
     z-index: 10
 }
+
+#edit-device .modal-header input {
+    width: 100%;
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+    outline: none; 
+}
  

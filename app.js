@@ -27,6 +27,9 @@ database.structure.init();
 database.floor = new model('./data/floor',['id']);
 database.floor.init();
 
+database.devices = new model('./data/devices',['id']);
+database.devices.init();
+
 database.langs = new model('./data/langs',['label']);
 database.langs.init();
 
@@ -99,6 +102,16 @@ io.sockets.on('connection', function (socket) {
       for (var h in session) {    
         if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
           session[h].socket.emit('projects-all',database.projects.select(null,['name']));
+        }
+      }
+    }
+  }
+  
+  var wallDevices = function () {
+    if (hash.length>1) {
+      for (var h in session) {    
+        if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
+          session[h].socket.emit('devices-all',database.devices.getAll());
         }
       }
     }
@@ -202,19 +215,40 @@ io.sockets.on('connection', function (socket) {
     socket.emit(db,d);
     if (db=='projects') wallProjects();
     if (db=='structure') wallStructure(session[hash].project);
+    if (db=='devices') wallDevices();
   });
   
+  socket.on('db-remove',function(db,idx){
+    
+    if (hash.length<=1) return;
+    if (typeof(database[db])=='undefined') return;
+    
+    database[db].remove(idx);
+
+    if (db=='projects') wallProjects();
+    if (db=='structure') wallStructure(session[hash].project);
+    if (db=='devices') wallDevices();    
+    
+  });
   
   socket.on('db-get',function(db,idx){
     
     if (hash.length<=1) return;
     if (typeof(database[db])=='undefined') return;
     
-    var ret=database[db].get(idx);
+    if (idx==null) {
+      var ret=database[db].getAll();
+    } else {
+      var ret=database[db].get(idx);
+    }
     
     if (typeof(ret)=='object' && ret!=null) {
     
-      socket.emit(db,ret);
+      if (idx==null) {
+        socket.emit(db+'-all',ret);
+      } else {
+        socket.emit(db,ret);
+      }
       if (db=='projects') {
         session[hash].project=idx;
         wallStructure(idx);

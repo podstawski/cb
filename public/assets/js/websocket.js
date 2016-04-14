@@ -81,3 +81,11 @@ websocket.on('structure',function(data){
     });
    
 });
+
+websocket.on('devices-all', function(data) {
+    if (typeof(devicesTableDraw)=='function' && $('.devicetable').length>0) {
+        devicesTableDraw(data.data); 
+    }
+});
+
+

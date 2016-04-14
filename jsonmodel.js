@@ -241,6 +241,15 @@ var Model = function(file,index,logger) {
             
         },
         
+        remove: function (idx) {
+            idx=createIndex(idx);
+            
+            if (typeof(data[idx])!='undefined') {
+                delete(data[idx]);
+                lastSet=Date.now();
+            }
+        },
+        
         index: function(data) {
             return createIndex(data);
         },
