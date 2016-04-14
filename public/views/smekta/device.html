@@ -1,3 +1,86 @@
-<label><img src="assets/img/noimg.png"/></label>
 
-<input name="symbol" placeholder="Symbol"/>
+
+<div class="card">
+    <div class="card-header">
+        <strong>Device attributes</strong> 
+    </div>
+    <div class="card-block">
+
+        <div class="form-group row">
+            <label class="col-md-3 form-control-label translate" for="symbol">Symbol</label>
+            <div class="col-md-9">
+                <input type="text" id="symbol" value="[symbol]" name="symbol"
+                       class="form-control" placeholder="Symbol">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-sm-6">
+                <label for="inputs" class="translate">Inputs</label>
+                <select class="form-control" name="inputs" id="inputs">
+                    <option>0</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                    <option>7</option>
+                    <option>8</option>
+                    <option>9</option>
+                    <option>10</option>
+                    <option>11</option>
+                    <option>12</option>
+                    <option>13</option>
+                    <option>14</option>
+                    <option>15</option>
+                    <option>16</option> 
+                </select>
+            </div>
+     
+            <div class="form-group col-sm-6">
+                <label for="outputs" class="translate">Outputs</label>
+                <select class="form-control" name="outputs" id="outputs">
+                    <option>0</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                    <option>7</option>
+                    <option>8</option>
+                    <option>9</option>
+                    <option>10</option>
+                    <option>11</option>
+                    <option>12</option>
+                    <option>13</option>
+                    <option>14</option>
+                    <option>15</option>
+                    <option>16</option> 
+                </select>
+            </div>
+        </div>
+        
+            
+        <div class="form-group row">
+            <label class="col-md-3 form-control-label translate" for="image">Image</label>
+            <div class="col-md-9">
+                <label for="img-input" class="img-input">
+                    [if:img]
+                    <img src="[img]"/>
+                    [endif:img]
+                    [if:!img]
+                    <img src="assets/img/noimg.png"/>
+                    [endif:!img]    
+                </label> 
+            </div>
+        </div>            
+            
+            
+
+    </div>
+
+</div>
+
+            

@@ -89,4 +89,14 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
     padding: 0;
     outline: none; 
 }
+
+#edit-device .img-input {
+    cursor: pointer;
+    padding: 3px;
+    border: solid 1px #808080;
+}
+
+#edit-device .img-input img {
+    max-width: 80px;
+}
  

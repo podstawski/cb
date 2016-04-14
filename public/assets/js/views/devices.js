@@ -1,8 +1,8 @@
 var devicesColumns=[
 	{ title: $.translate("Name"), data: "name" },
     { title: $.translate("Symbol"), data: "symbol" },
-    { title: $.translate("Inputs") , data: "inp"},
-    { title: $.translate("Outputs"), data: "outp" },
+    { title: $.translate("Inputs") , data: "inputs"},
+    { title: $.translate("Outputs"), data: "outputs" },
     {
 		title: $.translate("Actions"),
 		orderable: false,
@@ -62,6 +62,8 @@ $(function(){
 	
 	websocket.emit('db-get','devices');
 
+	var uploadImage=null;
+	
 	if (typeof($.devicesInitiated)=='undefined') { //prevent multi event
 		$(document).on('click','.devicetable td a.btn-danger',function(e){
 			var id=$(this).parent().parent().attr('id');
@@ -70,6 +72,8 @@ $(function(){
 		});
 		
 		$(document).on('click','.devicetable td a.btn-info',function(e){
+			
+			uploadImage=null;
 			var id=$(this).parent().parent().attr('id');
 			$('#edit-device').attr('rel',id);
 			
@@ -77,6 +81,9 @@ $(function(){
 
 			$.smekta_file('views/smekta/device.html',devicesData[id],'#edit-device .modal-body',function(){
 				$('#edit-device .modal-body .translate').translate();
+				
+				$('#edit-device .modal-body #inputs').val(devicesData[id].inputs);
+				$('#edit-device .modal-body #outputs').val(devicesData[id].outputs);
 			});
 			
 		});
@@ -93,14 +100,34 @@ $(function(){
 		$('#edit-device').modal('hide');
 		var data={id:$('#edit-device').attr('rel')};
 		
-		$('#edit-device input').each(function(){
+		$('#edit-device input,#edit-device select').each(function(){
 			data[$(this).attr('name')]=$(this).val();
 		});
 		
-		console.log(data);
+		if (uploadImage!=null) {
+            data.img = uploadImage;
+        }
+		
 		
 		websocket.emit('db-save','devices',data);
 	});
+
+	$('#img-input').on('change',function(){
+		var d=$('#img-input').prop('files')[0];
+		if (typeof(d)!='undefined') {
+			var file_reader = new FileReader();
+			file_reader.readAsDataURL(d);
+			
+			file_reader.onload = function() {
+				uploadImage=file_reader.result;
+				$('#edit-device .img-input img').attr('src',uploadImage);
+			};
+		}
+	
+	
+	});      
+
+
 });
 
 

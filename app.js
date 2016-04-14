@@ -93,7 +93,7 @@ io.sockets.on('connection', function (socket) {
       
     }
     
-    socket.emit('structure',structure);
+    socket.emit('structure-all',structure);
   }
   
   
@@ -189,6 +189,7 @@ io.sockets.on('connection', function (socket) {
         var img=d.img.substr(11);
         var semicolon=img.indexOf(';');
         var img_ext=img.substr(0,semicolon);
+        img_ext=img_ext.replace('svg+xml','svg');
         img=img.substr(semicolon+1);
         
         if (img.substr(0,7)=='base64,') {

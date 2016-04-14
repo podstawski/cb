@@ -69,7 +69,7 @@ websocket.on('projects',function(data){
     
 });
 
-websocket.on('structure',function(data){
+websocket.on('structure-all',function(data){
     
     $.smekta_file('views/smekta/sidebar-structure.html',data,'#left-sidebar',function(){
         $('#left-sidebar a.nav-dropdown-toggle').click(function(){
@@ -81,6 +81,13 @@ websocket.on('structure',function(data){
     });
    
 });
+
+websocket.on('structure',function(data){
+    if (typeof(floorDraw)=='function') {
+        floorDraw(data); 
+    }    
+});
+
 
 websocket.on('devices-all', function(data) {
     if (typeof(devicesTableDraw)=='function' && $('.devicetable').length>0) {
