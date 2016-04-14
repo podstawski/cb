@@ -28,6 +28,8 @@
             return dictionary[lang][txt];
         },
         'translateLang': function(lang) {
+            if (lang==null) return userLang;
+            
             userLang=lang;
             $('.translate').translate();
             var src=$('.translation .translate-option[lang="'+lang+'"] img').attr('src');

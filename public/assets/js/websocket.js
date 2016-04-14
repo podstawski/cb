@@ -28,7 +28,9 @@ websocket.on('logout',function() {
 });
 
 websocket.on('projects-all', function(pr) {
-    $.smekta_file('views/smekta/projects.html',pr,'#projects-footer');
+    $.smekta_file('views/smekta/projects.html',pr,'#projects-footer',function() {
+        $('#projects-footer .translate').translate();
+    });
 });
 
 websocket.on('projects',function(data){
