@@ -5,6 +5,7 @@ var lastDragEvent=0;
 var thisfloor=0;
 var dotW=16;
 var dotH=16;
+var uploadImage=null;
 
 
 var zoomContainer = function(z) {
@@ -59,7 +60,7 @@ var moveElements = function() {
         switch (elements[i].type) {
             case 'polygon': {
                 elements[i].element.remove();
-                drawPolygon(elements[i].points,elements[i].id,elements[i].title,elements[i]);
+                drawPolygon(elements[i].points,elements[i].id,elements[i].name,elements[i]);
                 break;
             }
         }
@@ -88,7 +89,7 @@ var drawPolygonPoints = function() {
     //console.log(w,h,w*zoom,h*zoom);
 }
 
-var drawPolygon = function(points,id,title,element) {
+var drawPolygon = function(points,id,name,element) {
     var points2=[],p='';
     for (var i=0; i<points.length; i++) points2.push(calulatePoint(points[i]));
 
@@ -120,12 +121,39 @@ var drawPolygon = function(points,id,title,element) {
     poli.width(maxx-minx);
     poli.height(maxy-miny);
 
+    if (id==null) id=0;
+    if (name==null) name='';
     
-    if (id!=null) poli.attr('id',id);
-    if (title!=null) poli.attr('title',title);
+    poli.attr('id',id);
+    poli.attr('title',name);
     
-    if(element==null) elements.push({type:'polygon',element:poli,points: points,id:id,title:title});
-    else element.element=poli;
+    if(element==null) {
+        element={
+            type:'polygon',
+            element:poli,
+            points: points,
+            id:id,
+            name:name
+        };
+        elements.push(element);
+    } else {
+        element.element=poli;
+    }
+    
+    poli.dblclick(function(e){
+        $('#edit-element .modal-header input').val(name);
+        $('#edit-element').attr('rel',id);
+        $('#edit-element .modal-body').html('');
+        $('#edit-element').modal('show');
+        
+        uploadImage=null;
+        
+        $.smekta_file('views/smekta/floor-polygon.html',element,'#edit-element .modal-body',function(){
+            $('#edit-element .modal-body .translate').translate();
+        });
+        
+        
+    });
     return poli;
 }
 
@@ -207,12 +235,12 @@ var floorDrawElements=function(data) {
         }
    
         if (!matchFound) {
-            if (typeof(data[i].title)=='undefined') data[i].title='';
+            if (typeof(data[i].name)=='undefined') data[i].name='';
         
             
             switch (data[i].type) {
                 case 'polygon': {
-                    drawPolygon(data[i].points,data[i].id,data[i].title);
+                    drawPolygon(data[i].points,data[i].id,data[i].name);
                     break;
                 }
             }        
@@ -280,5 +308,44 @@ $(function(){
 
     calculateWH();
     $(window).bind('resize', calculateWH);
+    
+    $('#edit-element .btn-info').click(function(){
+        
+		$('#edit-element').modal('hide');
+		var data={id:$('#edit-element').attr('rel')};
+		
+		$('#edit-element input,#edit-element select').each(function(){
+			data[$(this).attr('name')]=$(this).val();
+		});
+        
+        if (uploadImage!=null) {
+            data.img=uploadImage;
+        }
+        
+        websocket.emit('db-save','floor',data);
+        
+    });
+    
+    $('#confirm-delete .btn-danger').click(function () {
+        $('#confirm-delete').modal('hide');
+        $('#edit-element').modal('hide');
+        websocket.emit('db-remove','floor',$('#edit-element').attr('rel'));
+    });
+    
+    
+    $('#img-input').on('change',function(){
+		var d=$('#img-input').prop('files')[0];
+		if (typeof(d)!='undefined') {
+			var file_reader = new FileReader();
+			file_reader.readAsDataURL(d);
+			
+			file_reader.onload = function() {
+				uploadImage=file_reader.result;
+				$('#edit-element .img-input img').attr('src',uploadImage);
+			};
+		}
+	
+	
+	});          
     
 });

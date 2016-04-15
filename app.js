@@ -117,6 +117,15 @@ io.sockets.on('connection', function (socket) {
     }
   }
   
+  var wallFloor = function (floor) {
+    if (hash.length>1) {
+      for (var h in session) {    
+        if (typeof(session[h].socket)!='undefined' && session[h].socket!=null && typeof(session[h].floor)!='undefined' && session[h].floor==floor) {
+          session[h].socket.emit('floor-select',database.floor.select([{floor:floor}]));
+        }
+      }
+    }
+  }
   
   if (typeof(cookies.sessid)!='undefined')
     if (typeof(session[cookies.sessid])!='undefined') {
@@ -217,6 +226,7 @@ io.sockets.on('connection', function (socket) {
     if (db=='projects') wallProjects();
     if (db=='structure') wallStructure(session[hash].project);
     if (db=='devices') wallDevices();
+    if (db=='floor' && typeof(d.floor)!='undefined') wallFloor(d.floor);
   });
   
   socket.on('db-remove',function(db,idx){
@@ -224,12 +234,16 @@ io.sockets.on('connection', function (socket) {
     if (hash.length<=1) return;
     if (typeof(database[db])=='undefined') return;
     
+    if (db=='floor') {
+      var floor=database[db].get(idx);
+    }
+    
     database[db].remove(idx);
 
     if (db=='projects') wallProjects();
     if (db=='structure') wallStructure(session[hash].project);
     if (db=='devices') wallDevices();    
-    
+    if (db=='floor') wallFloor(floor.floor);
   });
   
   socket.on('db-select',function(db,where,order){
