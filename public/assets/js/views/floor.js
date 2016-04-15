@@ -1,6 +1,8 @@
 var polygonMode=true;
 var polygonPoints=[];
+var elements=[];
 var lastDragEvent=0;
+var thisfloor=0;
 var dotW=16;
 var dotH=16;
 
@@ -52,6 +54,21 @@ var calulatePoint = function(p) {
     return point;
 }
 
+var moveElements = function() {
+    for (var i=0;i<elements.length;i++) {
+        switch (elements[i].type) {
+            case 'polygon': {
+                elements[i].element.remove();
+                drawPolygon(elements[i].points,elements[i].id,elements[i].title,elements[i]);
+                break;
+            }
+        }
+       
+    }
+    
+
+}
+
 var drawPolygonPoints = function() {
 
     
@@ -71,12 +88,56 @@ var drawPolygonPoints = function() {
     //console.log(w,h,w*zoom,h*zoom);
 }
 
+var drawPolygon = function(points,id,title,element) {
+    var points2=[],p='';
+    for (var i=0; i<points.length; i++) points2.push(calulatePoint(points[i]));
+
+    var minx=0,miny=0,maxx=0,maxy=0;
+
+    
+    for (var i=0; i<points2.length; i++) {
+        
+        //align to lines:
+        for (var j=0; j<i; j++) {
+            if (Math.abs(points2[i].x-points2[j].x)<5) points2[i].x=points2[j].x;
+            if (Math.abs(points2[i].y-points2[j].y)<5) points2[i].y=points2[j].y;
+        }
+        //calculate bounds:
+        if (points2[i].x<minx || minx==0) minx=points2[i].x;
+        if (points2[i].y<miny || miny==0) miny=points2[i].y;
+        if (points2[i].x>maxx ) maxx=points2[i].x;
+        if (points2[i].y>maxy ) maxy=points2[i].y;
+              
+    }
+    
+    for (var i=0; i<points2.length; i++) {
+        p+=Math.round(points2[i].x - minx) + ',' + Math.round(points2[i].y - miny) + ' ';
+    }
+    
+    var polygon='<div class="polygon"><svg><polygon points="'+p.trim()+'"/></svg></div>';
+
+    var poli = $(polygon).appendTo('#floor-container .draggable-container').css({left: minx, top:miny});
+    poli.width(maxx-minx);
+    poli.height(maxy-miny);
+
+    
+    if (id!=null) poli.attr('id',id);
+    if (title!=null) poli.attr('title',title);
+    
+    if(element==null) elements.push({type:'polygon',element:poli,points: points,id:id,title:title});
+    else element.element=poli;
+    return poli;
+}
+
 var createPolygonFromPoints = function() {
     
+    drawPolygon(polygonPoints);
     for (var i=0; i<polygonPoints.length; i++) {
-
         polygonPoints[i].dot.remove();
+        delete(polygonPoints[i].dot);
     }
+    
+    websocket.emit('db-save','floor',{floor: thisfloor, type:'polygon', points:polygonPoints});
     polygonPoints=[];   
 }
 
@@ -91,7 +152,10 @@ var floorDraw=function(data) {
                        {name: data.name, href:'floor.html,'+data.id}]);
     }
     
-    $('#floor-container img.svg').attr('src',data.img);
+    $('#floor-container img.svg').attr('src',data.img).load(function(){
+        websocket.emit('db-select','floor',[{floor:thisfloor}]);
+    });
+    
     
     $('#floor-container .svg').click(function(e){
         if (polygonMode && Date.now()-lastDragEvent>800) {
@@ -122,32 +186,68 @@ var floorDraw=function(data) {
 }
 
 
+var floorDrawElements=function(data) {
+        
+    if (data.length==0) return;
+    if (data[0].floor!=thisfloor) return;
+    
+    for(var i=0;i<elements.length;i++) {
+        elements[i].toBeDeleted=true;
+    }
+    
+    for(var i=0;i<data.length;i++) {
+        var matchFound=false;
+        for(var j=0; j<elements.length; j++) {
+            if (data[i].id == elements[j].id) {
+                elements[j].toBeDeleted=false;
+                for( var k in data[i]) elements[j][k]=data[i][k];
+                matchFound=true;
+                break;
+            }
+        }
+   
+        if (!matchFound) {
+            if (typeof(data[i].title)=='undefined') data[i].title='';
+        
+            
+            switch (data[i].type) {
+                case 'polygon': {
+                    drawPolygon(data[i].points,data[i].id,data[i].title);
+                    break;
+                }
+            }        
+            
+        }
+        
+        
+    }
+
+    
+    
+    for(var i=0;i<elements.length;i++) {
+        
+        if (typeof(elements[i].toBeDeleted)!='undefined' && elements[i].toBeDeleted) {
+            elements[i].element.remove();
+            elements.splice(i,1);
+            i--;
+        }
+    }    
+    
+    moveElements();
+    
+}
+
 $(function(){
 
     var hash=window.location.hash;
     hash=hash.split(',');
     if (hash.length>1 && parseInt(hash[1])>0) {
-        websocket.emit('db-get','structure',parseInt(hash[1]));
+        thisfloor=parseInt(hash[1]);
+        websocket.emit('db-get','structure',thisfloor);
     }
 
+        
 
-    
-    $('#s').css('left','330px');
-    $('#s').css('top','460px');
-    
-    
-    $('#s').css('width','395px');
-    $('#s').css('height','270px');
-    
-    $('#s svg').css('width','395px');
-    $('#s svg').css('height','270px');
-    
-    
-    //$('#s').draggable();
-    
-    
-    
-    
     $('#floor-container .draggable-container').draggable({
         stop: function() {
             lastDragEvent=Date.now();
@@ -168,10 +268,14 @@ $(function(){
     
     
     var calculateWH = function () {
-        $('#floor-container').height(parseInt($(window).height())-270);
+        var height=parseInt($(window).height())-270;
+        if (height<200) height=200;
+        
+        $('#floor-container').height(height);
         $('.svg').width($('#floor-container').width());
         
         drawPolygonPoints();
+        moveElements();
     }
 
     calculateWH();

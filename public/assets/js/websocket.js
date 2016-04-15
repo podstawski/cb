@@ -88,6 +88,11 @@ websocket.on('structure',function(data){
     }    
 });
 
+websocket.on('floor-select',function(data){
+    if (typeof(floorDrawElements)=='function') {
+        floorDrawElements(data.data); 
+    }    
+});
 
 websocket.on('devices-all', function(data) {
     if (typeof(devicesTableDraw)=='function' && $('.devicetable').length>0) {

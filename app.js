@@ -232,6 +232,16 @@ io.sockets.on('connection', function (socket) {
     
   });
   
+  socket.on('db-select',function(db,where,order){
+
+    if (hash.length<=1) return;
+    if (typeof(database[db])=='undefined') return;
+    
+    var ret=database[db].select(where,order);
+        
+    socket.emit(db+'-select',ret);
+  });
+  
   socket.on('db-get',function(db,idx){
     
     if (hash.length<=1) return;
@@ -255,6 +265,11 @@ io.sockets.on('connection', function (socket) {
         wallStructure(idx);
 
       }
+      if (db=='structure') {
+        session[hash].floor=idx;
+      }
+
+
     }
   });
 });
