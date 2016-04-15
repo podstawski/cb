@@ -67,20 +67,26 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
 
 #floor-container {
     overflow: hidden;
-    position: relative
+    position: relative;
+    width:100%;
+    padding: 0;
 }
 
 #floor-container .draggable-container {
     width: 100%;
+    height: auto;
     position: relative;
+    padding: 0;
 }
 
-#floor-container .svg {
-    position: absolute;
-    top:0;
-    left:0;
-    z-index: 10
+#floor-container .draggable-container:active {
+    cursor: move;
 }
+
+#floor-container .draggable-container .polygon-dot {
+    position: absolute;
+}
+
 
 #edit-device .modal-header input {
     width: 100%;
