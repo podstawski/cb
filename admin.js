@@ -55,12 +55,21 @@ var Admin = function(socket,session,hash,database) {
     }
     
     
-    var wallProjects = function () {
+    var wallProjects = function (all) {
+        if (all==null) all=false;
+        
+        
         if (loggedIn) {
-            for (var h in session) {    
-                if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
-                  session[h].socket.emit('projects-all',database.projects.select(null,['name']));
+  
+            var projects=database.projects.select(null,['name']);
+            if (all) {
+                for (var h in session) {    
+                    if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
+                        session[h].socket.emit('projects-all',projects);
+                    }
                 }
+            } else {
+                socket.emit('projects-all',projects);
             }
         }
     }
@@ -88,16 +97,16 @@ var Admin = function(socket,session,hash,database) {
     
     socket.on('login',function (data) {
       
-      if (data.username.length && data.username==data.password) {
-        
-        session[hash].username=data.username;
-        socket.emit('login',data);
-        wallProjects();
+        if (data.username.length && data.username==data.password) {
+            loggedIn=true;
+            session[hash].username=data.username;
+            socket.emit('login',data);
+            wallProjects();
               
-      } else {
-        loggedIn=false;
-        socket.emit('err','Login error',"Username or password doesn't match");
-      }
+        } else {
+            loggedIn=false;
+            socket.emit('err','Login error',"Username or password doesn't match");
+        }
       
     });
     
@@ -169,7 +178,7 @@ var Admin = function(socket,session,hash,database) {
         
         database[db].remove(idx);
     
-        if (db=='projects') wallProjects();
+        if (db=='projects') wallProjects(true);
         if (db=='structure') wallStructure(session[hash].project);
         if (db=='devices') wallDevices();    
         if (db=='floor') wallFloor(floor.floor);

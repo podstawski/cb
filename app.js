@@ -65,7 +65,9 @@ io.sockets.on('connection', function (socket) {
     if (typeof(session[hash])=='undefined') {
         session[hash]={};
     }
-        
+    
+    session[hash].socket=socket;
+    
     socket.on('disconnect',function() {
         console.log('Bye client ',hash);
         if (typeof(session[hash])!='undefined') {
