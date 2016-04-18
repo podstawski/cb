@@ -18,19 +18,19 @@ var io = require('socket.io').listen(app.listen(3000, function () {
 var database={};
 var session=[];
 
-database.projects = new model('./data/projects',['id']);
+database.projects = new model({file:'./data/projects',index:['id']});
 database.projects.init();
 
-database.structure = new model('./data/structure',['id']);
+database.structure = new model({file:'./data/structure',index:['id']});
 database.structure.init();
 
-database.floor = new model('./data/floor',['id']);
+database.floor = new model({file:'./data/floor',index:['id']});
 database.floor.init();
 
-database.devices = new model('./data/devices',['id']);
+database.devices = new model({file:'./data/devices',index:['id']});
 database.devices.init();
 
-database.langs = new model('./data/langs',['label']);
+database.langs = new model({file:'./data/langs',index:['label']});
 database.langs.init();
 
 
