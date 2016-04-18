@@ -60,8 +60,10 @@ io.sockets.on('connection', function (socket) {
   var cookies=parseCookies(socket.handshake.headers.cookie);
 
 
-  var wallStructure =function (project) {
+  var wallStructure =function (project,all) {
     //if (hash.length==1) return;
+    
+    if (all==null) all=false;
     
     var structure=database.structure.select([{project:project,parent:null}],['pri','name']);
     
@@ -93,7 +95,15 @@ io.sockets.on('connection', function (socket) {
       
     }
     
-    socket.emit('structure-all',structure);
+    
+    if (!all) socket.emit('structure-all',structure);
+    else {
+      for (var h in session) {    
+        if (typeof(session[h].socket)!='undefined' && session[h].socket!=null && typeof(session[h].project)!='undefined' && session[h].project==project) {
+          session[h].socket.emit('structure-all',structure);
+        }
+      }      
+    }
   }
   
   
@@ -140,6 +150,7 @@ io.sockets.on('connection', function (socket) {
     wallProjects();
     if (typeof(session[hash].project)!='undefined') {
         socket.emit('projects',database.projects.get(session[hash].project));
+        wallStructure(session[hash].project);
     }
   } else {
     socket.emit('logout');
@@ -224,7 +235,7 @@ io.sockets.on('connection', function (socket) {
     }
     socket.emit(db,d);
     if (db=='projects') wallProjects();
-    if (db=='structure') wallStructure(session[hash].project);
+    if (db=='structure') wallStructure(session[hash].project,true);
     if (db=='devices') wallDevices();
     if (db=='floor' && typeof(d.floor)!='undefined') wallFloor(d.floor);
   });

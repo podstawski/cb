@@ -17,20 +17,27 @@ function setBreadcrumbs(b) {
     $(html).insertAfter('.breadcrumb .breadcrumb-home');
 }
 
+var pageCleanup=function() {
+    $('.breadcrumb .icon-note').parent().hide();
+}
 
 
-/*
+
 $(function(){
+    
+
     
     (function() {
         var loadPageParent = window.loadPage;
         
+        pageCleanup();
+        
         window.loadPage = function(url) {
             //console.log(url);
+            pageCleanup();
             loadPageParent(url);        
         }
     
     })();
 
 });
-*/

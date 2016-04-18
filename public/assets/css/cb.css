@@ -79,6 +79,7 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
     padding: 0;
 }
 
+
 #floor-container .draggable-container:active {
     cursor: move;
 }
@@ -104,6 +105,10 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
     stroke-width:2;
     width: 100%;
     height: 100%;    
+}
+
+.breadcrumb .breadcrumb-menu .active {
+    color: #20a8d8
 }
 
 #edit-element .modal-header input {

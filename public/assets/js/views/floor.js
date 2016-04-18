@@ -1,4 +1,4 @@
-var polygonMode=true;
+var polygonMode=false;
 var polygonPoints=[];
 var elements=[];
 var lastDragEvent=0;
@@ -115,7 +115,7 @@ var drawPolygon = function(points,id,name,element) {
         p+=Math.round(points2[i].x - minx) + ',' + Math.round(points2[i].y - miny) + ' ';
     }
     
-    var polygon='<div class="polygon"><svg><polygon points="'+p.trim()+'"/></svg></div>';
+    var polygon='<div class="polygon element"><svg><polygon points="'+p.trim()+'"/></svg></div>';
 
     var poli = $(polygon).appendTo('#floor-container .draggable-container').css({left: minx, top:miny});
     poli.width(maxx-minx);
@@ -165,6 +165,10 @@ var createPolygonFromPoints = function() {
         delete(polygonPoints[i].dot);
     }
     
+    polygonMode=false;
+    $('.breadcrumb .icon-note').removeClass('active');
+    $('#floor-container .draggable-container .element').show();    
+    
     websocket.emit('db-save','floor',{floor: thisfloor, type:'polygon', points:polygonPoints});
     polygonPoints=[];   
 }
@@ -186,6 +190,7 @@ var floorDraw=function(data) {
     
     
     $('#floor-container .svg').click(function(e){
+        
         if (polygonMode && Date.now()-lastDragEvent>800) {
             var zoom=zoomContainer();
             var ex = parseFloat(e.offsetX === undefined ? e.originalEvent.layerX : e.offsetX);
@@ -274,7 +279,17 @@ $(function(){
         websocket.emit('db-get','structure',thisfloor);
     }
 
-        
+    $('.breadcrumb .breadcrumb-menu .icon-note').parent().fadeIn(500).click(function() {
+        if (polygonMode) {
+            polygonMode=false;
+            $('.breadcrumb .breadcrumb-menu i.icon-note').removeClass('active');
+            $('#floor-container .draggable-container .element').show();
+        } else {
+            polygonMode=true;
+            $('.breadcrumb .breadcrumb-menu i.icon-note').addClass('active');
+            $('#floor-container .draggable-container .element').hide();
+        }
+    });
 
     $('#floor-container .draggable-container').draggable({
         stop: function() {
