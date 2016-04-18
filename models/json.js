@@ -14,7 +14,9 @@ modelSaveTimer=setTimeout(saveModel,1000);
 
 
 
-var Model = function(file,index,logger) {
+var Model = function(opt,logger) {
+    var file=opt.file;
+    var index=opt.index;
     var data=[];
     var lastSave=0;
     var lastSet=0;
