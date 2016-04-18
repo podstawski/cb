@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var crypto = require('crypto');
-var model = require('./jsonmodel');
+var model = require('./models/json');
 var fs = require('fs');
 
 app.use(express.static('public'));
