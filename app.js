@@ -234,7 +234,10 @@ io.sockets.on('connection', function (socket) {
       d=database[db].set(d);
     }
     socket.emit(db,d);
-    if (db=='projects') wallProjects();
+    if (db=='projects') {
+      session[hash].project=d.id;
+      wallProjects();
+    }
     if (db=='structure') wallStructure(session[hash].project,true);
     if (db=='devices') wallDevices();
     if (db=='floor' && typeof(d.floor)!='undefined') wallFloor(d.floor);
