@@ -157,20 +157,25 @@ var drawPolygon = function(points,id,name,element) {
     return poli;
 }
 
-var createPolygonFromPoints = function() {
-    
-    drawPolygon(polygonPoints);
+var removePolygonPoints=function() {
     for (var i=0; i<polygonPoints.length; i++) {
         polygonPoints[i].dot.remove();
         delete(polygonPoints[i].dot);
     }
+    polygonPoints=[]; 
+};
+
+var createPolygonFromPoints = function() {
+    
+    drawPolygon(polygonPoints);
+
     
     polygonMode=false;
     $('.breadcrumb .icon-note').removeClass('active');
     $('#floor-container .draggable-container .element').show();    
     
     websocket.emit('db-save','floor',{floor: thisfloor, type:'polygon', points:polygonPoints});
-    polygonPoints=[];   
+    removePolygonPoints();
 }
 
 var floorDraw=function(data) {
@@ -185,7 +190,11 @@ var floorDraw=function(data) {
     }
     
     $('#floor-container img.svg').attr('src',data.img).load(function(){
-        console.log($('#floor-container').width(),$('#floor-container .draggable-container').width(),$('#floor-container .draggable-container').height());
+        
+        setTimeout(function(){
+            console.log($('#floor-container').width(),$('#floor-container .draggable-container').width(),$('#floor-container .draggable-container').height());
+            
+        },3000);
         websocket.emit('db-select','floor',[{floor:thisfloor}]);
     });
     
@@ -280,17 +289,27 @@ $(function(){
         websocket.emit('db-get','structure',thisfloor);
     }
 
-    $('.breadcrumb .breadcrumb-menu .icon-note').parent().fadeIn(500).click(function() {
-        if (polygonMode) {
-            polygonMode=false;
-            $('.breadcrumb .breadcrumb-menu i.icon-note').removeClass('active');
-            $('#floor-container .draggable-container .element').show();
-        } else {
-            polygonMode=true;
-            $('.breadcrumb .breadcrumb-menu i.icon-note').addClass('active');
-            $('#floor-container .draggable-container .element').hide();
-        }
-    });
+    var icon_selector='.breadcrumb .breadcrumb-menu i.icon-note';
+    $(icon_selector).removeClass('active');
+    $(icon_selector).parent().fadeIn(500);
+    
+    if (typeof($.breadcrumbIconClick)=='undefined') {
+        $.breadcrumbIconClick=true;
+
+        $(document).on('click',icon_selector,function(){
+            if (polygonMode) {
+                polygonMode=false;
+                $(icon_selector).removeClass('active');
+                $('#floor-container .draggable-container .element').show();
+                removePolygonPoints();
+            } else {
+                polygonMode=true;
+                $(icon_selector).addClass('active');
+                $('#floor-container .draggable-container .element').hide();
+            }
+        });
+        
+    }
 
     $('#floor-container .draggable-container').draggable({
         stop: function() {
