@@ -78,7 +78,7 @@ io.sockets.on('connection', function (socket) {
         
         
     console.log('Hello new client',hash); 
-    admin(socket,session,hash,database);  
+    admin(socket,session,hash,database,'./public');  
   
 
 });

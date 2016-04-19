@@ -1,10 +1,9 @@
 var fs = require('fs');
 
 var images='images';
-var images_path='./public';
 
 
-var Admin = function(socket,session,hash,database) {
+var Admin = function(socket,session,hash,database,public_path) {
     var loggedIn=false;
 
  
@@ -154,7 +153,7 @@ var Admin = function(socket,session,hash,database) {
         
         if (img_blob!=null) {
             d.img=images+'/'+db+'-'+d.id+'.'+img_ext;
-            fs.writeFile(images_path+'/'+d.img,img_blob);
+            fs.writeFile(public_path+'/'+d.img,img_blob);
             d=database[db].set(d);
         }
         socket.emit(db,d);
