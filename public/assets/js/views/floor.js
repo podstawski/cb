@@ -185,6 +185,7 @@ var floorDraw=function(data) {
     }
     
     $('#floor-container img.svg').attr('src',data.img).load(function(){
+        console.log($('#floor-container').width(),$('#floor-container .draggable-container').width(),$('#floor-container .draggable-container').height());
         websocket.emit('db-select','floor',[{floor:thisfloor}]);
     });
     
