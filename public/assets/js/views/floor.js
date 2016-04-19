@@ -89,6 +89,18 @@ var drawPolygonPoints = function() {
     //console.log(w,h,w*zoom,h*zoom);
 }
 
+
+var calculateWH = function () {
+    var height=parseInt($(window).height())-270;
+    if (height<200) height=200;
+    
+    $('#floor-container').height(height);
+    $('.svg').width($('#floor-container').width());
+    
+    drawPolygonPoints();
+    moveElements();
+}
+
 var drawPolygon = function(points,id,name,element) {
     var points2=[],p='';
     for (var i=0; i<points.length; i++) points2.push(calulatePoint(points[i]));
@@ -191,10 +203,11 @@ var floorDraw=function(data) {
     
     $('#floor-container img.svg').attr('src',data.img).load(function(){
         
+        calculateWH();
         setTimeout(function(){
             console.log($('#floor-container').width(),$('#floor-container .draggable-container').width(),$('#floor-container .draggable-container').height());
             
-        },3000);
+        },1000);
         websocket.emit('db-select','floor',[{floor:thisfloor}]);
     });
     
@@ -330,18 +343,8 @@ $(function(){
     });   
     
     
-    var calculateWH = function () {
-        var height=parseInt($(window).height())-270;
-        if (height<200) height=200;
-        
-        $('#floor-container').height(height);
-        $('.svg').width($('#floor-container').width());
-        
-        drawPolygonPoints();
-        moveElements();
-    }
 
-    calculateWH();
+
     $(window).bind('resize', calculateWH);
     
     $('#edit-element .btn-info').click(function(){
