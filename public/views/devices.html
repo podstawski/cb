@@ -1,10 +1,13 @@
 <script>
 var requireJS = [
     "assets/js/libs/jquery.dataTables.min.js",
-    "assets/js/libs/dataTables.bootstrap.min.js"
+    "assets/js/libs/dataTables.bootstrap.min.js",
+    'assets/js/libs/jquery-ui.min.js'
 ];
 loadJS(requireJS, "assets/js/views/devices.js");
 </script>
+
+<link rel="stylesheet" href="assets/css/jquery-ui.css"/>
 
 <div id="current-title" class="translate" hidden>Devices</div>
 <div id="current-desc" class="translate" hidden>Devices used to make the object intelligent</div>
@@ -37,14 +40,17 @@ loadJS(requireJS, "assets/js/views/devices.js");
 </div>
 
 <!-- Modal -->
-<div id="edit-device" class="modal fade" role="dialog">
+<div id="edit-device" class="modal fade" role="dialog" data-backdrop="static" >
   <div class="modal-dialog">
 
     <!-- Modal content-->
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title"><input type="text" name="name" placeholder="Device name" class="translate" value=""/></h4>
+        <h4 class="modal-title">
+            <input type="text" name="name" placeholder="Device name" class="name translate" value=""/>
+            [<input type="text" name="symbol" placeholder="symbol" class="symbol translate" value=""/>]
+        </h4>
       </div>
       <div class="modal-body">
         
@@ -54,7 +60,6 @@ loadJS(requireJS, "assets/js/views/devices.js");
         <button type="button" class="btn btn-info translate">Save changes</button>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -76,3 +81,26 @@ loadJS(requireJS, "assets/js/views/devices.js");
 
 
 <input type="file" id="img-input" accept="image/*" style="display: none" />
+
+<!-- Modal -->
+<div id="edit-control" class="modal fade" role="dialog" data-backdrop="static">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">
+            <input type="text" name="addr" placeholder="Control address" class="addr translate" value=""/>
+        </h4>
+      </div>
+      <div class="modal-body">
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default translate" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-info translate">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>

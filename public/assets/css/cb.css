@@ -127,8 +127,26 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
     float: left;
 }
 
-#edit-device .modal-header input {
-    width: 100%;
+#edit-device .modal-header {
+    background-color: yellow;
+    border-radius: 3px 3px 0 0;
+}
+
+#edit-device .modal-footer {
+    background-color: yellow;
+    border-radius: 0 0 3px 3px;
+}
+
+#edit-device .modal-header input.name {
+    width: 69%;
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+    outline: none; 
+}
+
+#edit-device .modal-header input.symbol {
+    width: 20%;
     background-color: transparent;
     border: 0;
     padding: 0;
@@ -144,4 +162,100 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
 #edit-device .img-input img {
     max-width: 80px;
 }
+
+#edit-device .device-controls-top-container {
+    position: relative;
+}
+
+#edit-device .device-controls-container {
+    width: 200px;
+    height: 200px;
+    border: solid 1px black;
+    padding: 0;
+}
+
+#edit-device .device-controls-container div {
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+#edit-device .device-controls-label-container {
+    padding: 10px;
+    background-color: rgba(0,0,0,0.1);
+    height: 200px;
+    border: black solid;
+    border-width: 1px 1px 1px 0;
+}
  
+ 
+#edit-device .drg {
+    width: 50px;
+    height: 50px;
+    border: dashed 1px red;
+    text-align: center;
+    xpadding-top: 8px;
+    color: #909090;
+}
+
+#edit-device .drg .name {
+    margin-top: 30%;
+    display: block;
+}
+ 
+#edit-device .device-controls-label-container div {
+    margin-bottom: 10px;
+
+}
+
+#edit-device .device-controls-container .drg {
+    margin: 0;
+    position: absolute;    
+}
+
+
+#edit-device .drg:hover {
+    cursor: move;
+}
+
+#edit-device .disable-toggle {
+    position: absolute;
+    width: 98%;
+    text-align: center;
+    background-color: rgba(0,0,0,0.3);
+    height: 199px;
+    z-index: 20;
+    cursor: wait;
+    font-size: 36px;
+    padding-top: 80px;
+    color: #ffff00;
+}
+
+#edit-control .modal-header input.addr {
+    width: 90%;
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+    outline: none; 
+}
+
+#edit-control .modal-body i {
+    font-size: 36px;
+    cursor: pointer;
+}
+
+#edit-control .modal-body ul.images {
+    list-style-type: none;
+}
+
+#edit-control .modal-body ul.images li img {
+    max-width: 36px;
+}
+
+#edit-control .modal-body ul.images li input {
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+    outline: none; 
+}
+
+

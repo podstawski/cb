@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path=require('path');
 
 var images='images';
 
@@ -6,6 +7,54 @@ var images='images';
 var Admin = function(socket,session,hash,database,public_path) {
     var loggedIn=false;
 
+ 
+    var fileUploadData = function(data) {
+
+        if ( data.length>0 && data.substr(0,5)=='data:') {
+            data=data.substr(5);
+            var slash=data.indexOf('/');
+            data=data.substr(slash+1);
+            var semicolon=data.indexOf(';');
+            var data_ext=data.substr(0,semicolon);
+            data_ext=data_ext.replace('svg+xml','svg');
+            data=data.substr(semicolon+1);
+            
+            if (data.substr(0,7)=='base64,') {
+                var data_blob=new Buffer(data.substr(7),'base64');
+                return {ext: data_ext,blob:data_blob}
+            }
+        }
+        return null;
+    }
+    
+    var fileSaveData = function(obj) {
+        var name=images+'/'+obj.name+'.'+obj.ext;
+        
+        var path_name=path.dirname(public_path+'/'+name);
+        console.log(path_name);
+        try {
+            fs.lstatSync(path_name);    
+        } catch(e) {
+            fs.mkdirSync(path_name,0755);
+        }
+        
+        fs.writeFile(public_path+'/'+name,obj.blob);
+        return name;
+    }
+    
+    var fileDirList = function(dir) {
+        var d=public_path+'/'+images;
+        if (dir!=null && dir.length>0) {
+            d+='/'+dir;
+        }
+        
+        try {
+            return fs.readdirSync(d);
+        } catch (e) {
+            return [];
+        }
+        
+    }
  
     var wallStructure = function (project,all) {
         if (!loggedIn) return;
@@ -128,21 +177,16 @@ var Admin = function(socket,session,hash,database,public_path) {
       
       
         var img_blob=null;
-        if (typeof(d.img)!='undefined' && d.img.length>0 && d.img.substr(0,11)=='data:image/') {
-            var img=d.img.substr(11);
-            var semicolon=img.indexOf(';');
-            var img_ext=img.substr(0,semicolon);
-            img_ext=img_ext.replace('svg+xml','svg');
-            img=img.substr(semicolon+1);
-            
-            if (img.substr(0,7)=='base64,') {
-              var img_blob=new Buffer(img.substr(7),'base64');
+        
+        if (typeof(d.img)!='undefined') {
+            img_blob=fileUploadData(d.img);
+            if (img_blob!=null) {
+                d.img='';
             }
-           
-            d.img='';
         }
-      
+              
         d._updated=new Date().getTime();
+        
         if (parseInt(d.id)==0) {
             delete(d.id);
             d._created=d._updated;
@@ -152,8 +196,8 @@ var Admin = function(socket,session,hash,database,public_path) {
         }
         
         if (img_blob!=null) {
-            d.img=images+'/'+db+'-'+d.id+'.'+img_ext;
-            fs.writeFile(public_path+'/'+d.img,img_blob);
+            img_blob.name=db+'-'+d.id;
+            d.img=fileSaveData(img_blob);
             d=database[db].set(d);
         }
         socket.emit(db,d);
@@ -218,6 +262,24 @@ var Admin = function(socket,session,hash,database,public_path) {
         }
     });
     
+    
+    socket.on('upload-file',function(dir,data) {
+        var files=fileDirList(dir);
+        var obj=fileUploadData(data);
+        if (obj!=null) {
+            obj.name=dir+'/'+files.length;
+            fileSaveData(obj);
+            socket.emit('files',dir,fileDirList(dir));
+        }
+        
+    });
+    
+    socket.on('files', function(dir) {
+        socket.emit('files',dir,fileDirList(dir));
+    })
+    
+    
+    //loggedIn=true;return;
     //INIT STATE
 
     if (typeof(session[hash].username)!='undefined' && session[hash].username!=null) {

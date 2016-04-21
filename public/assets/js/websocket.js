@@ -101,3 +101,8 @@ websocket.on('devices-all', function(data) {
 });
 
 
+websocket.on('files', function(dir,data) {
+    if (typeof(displayFileList)=='function' ) {
+        displayFileList(dir,data); 
+    }
+});
