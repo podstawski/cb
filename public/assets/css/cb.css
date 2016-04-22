@@ -258,4 +258,18 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
     outline: none; 
 }
 
+#edit-control .modal-header {
+    background-color: green;
+    border-radius: 3px 3px 0 0;
+    color: white;
+}
 
+#edit-control .modal-footer {
+    background-color: green;
+    border-radius: 0 0 3px 3px;
+}
+
+
+aside .nav-tabs .nav-item + .nav-item {
+    margin: 0;
+}

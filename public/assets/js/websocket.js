@@ -98,6 +98,7 @@ websocket.on('devices-all', function(data) {
     if (typeof(devicesTableDraw)=='function' && $('.devicetable').length>0) {
         devicesTableDraw(data.data); 
     }
+    buildAsideMenu(data.data);
 });
 
 

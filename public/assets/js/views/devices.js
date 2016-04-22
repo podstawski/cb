@@ -1,6 +1,7 @@
 var devicesColumns=[
 	{ title: $.translate("Name"), data: "name" },
     { title: $.translate("Symbol"), data: "symbol" },
+	{ title: $.translate("Tags"), data: "tags" },
     { title: $.translate("Inputs") , data: "inputs"},
     { title: $.translate("Outputs"), data: "outputs" },
     {
@@ -94,6 +95,11 @@ var addControl = function (obj,data) {
 		});
 	});
 	
+	obj.contextmenu(function(e){
+		$(this).remove();
+		e.preventDefault();
+	});
+	
 	controlsStyle();
 }
 
@@ -123,6 +129,15 @@ var displayFileList = function(dir,files) {
 		var f=[];
 		for(var i=0;i<files.length;i++) f.push({name:files[i],dir:dir});
 		$.smekta_file('views/smekta/control-images.html',{files:f},'#edit-control ul.images',function(){
+		
+			$('.uploaded-images').click(function() {
+				var img=$(this).parent().find('input').val();
+				if ($('#edit-control #state').val().length>0) {
+                    img=img.replace($('#edit-control #state').val(),'__STATE__');
+                }
+				$('#edit-control #sstyle').val('background-image: url(images/[dir]/'+img+')')
+			});
+		
 		});
 		
     }
@@ -207,7 +222,6 @@ $(function(){
 				toggleDisabled();
 				$('#edit-device input[name="symbol"]').change(toggleDisabled);
 				
-				console.log(devicesData[id]);
 				
 				if (devicesData[id].controls !== undefined) {
                     for (var i=0; i<devicesData[id].controls.length; i++) {

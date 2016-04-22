@@ -1,16 +1,16 @@
 
 <div class="card">
     <div class="card-header">
-        <strong>Output attributes</strong> 
+        <strong>Input attributes</strong> 
     </div>
     <div class="card-block">
 
         <div class="form-group row">
-            <label class="col-md-3 form-control-label translate" for="state">States emited</label>
+            <label class="col-md-3 form-control-label translate" for="state">Default state</label>
             <div class="col-md-9">
                 <input type="text" id="state" [if:state]value="[state]"[endif:state] name="state"
-                       class="form-control translate" placeholder="States emited">
-                <span class="help-block translate">States emited after mouse operations, e.g. 0,1 or 0-100</span>
+                       class="form-control translate" placeholder="Default state">
+                <span class="help-block translate">State of output if no command was emited</span>
             </div>
         </div>
 
@@ -19,7 +19,7 @@
             <div class="col-md-9">
                 <input type="text" id="sstyle" [if:sstyle]value="[sstyle]"[endif:sstyle] name="sstyle"
                        class="form-control translate" placeholder="Style line">
-                <span class="help-block translate">CSS style</span>
+                <span class="help-block translate">CSS style depanding of state, use __STATE__ for evaluation</span>
             </div>
         </div>
 
