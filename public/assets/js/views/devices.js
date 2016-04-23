@@ -127,7 +127,10 @@ var displayFileList = function(dir,files) {
 	if (dir==$('#edit-control').attr('symbol')) {
 		
 		var f=[];
-		for(var i=0;i<files.length;i++) f.push({name:files[i],dir:dir});
+		for(var i=0;i<files.length;i++) {
+			f.push({name:files[i],dir:dir});
+		}
+
 		$.smekta_file('views/smekta/control-images.html',{files:f},'#edit-control ul.images',function(){
 		
 			$('.uploaded-images').click(function() {
@@ -135,7 +138,7 @@ var displayFileList = function(dir,files) {
 				if ($('#edit-control #state').val().length>0) {
                     img=img.replace($('#edit-control #state').val(),'__STATE__');
                 }
-				$('#edit-control #sstyle').val('background-image: url(images/[dir]/'+img+')')
+				$('#edit-control #sstyle').val('background-image: url(images/'+dir+'/'+img+')')
 			});
 		
 		});

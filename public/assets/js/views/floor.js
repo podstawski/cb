@@ -190,6 +190,8 @@ var createPolygonFromPoints = function() {
     removePolygonPoints();
 }
 
+
+
 var floorDraw=function(data) {
     
     
@@ -323,11 +325,13 @@ $(function(){
 
         $(document).on('click','.breadcrumb .breadcrumb-menu i.icon-menu',function(){
             
-            console.log('TODO',$('body').hasClass('aside-menu-open'));
             if ($('body').hasClass('aside-menu-open')) {
                 $('aside .device-element').each(function(){
+                    
                     var symbol=$(this).attr('rel');
-                    console.log(symbol);
+                    var device=new Device(globalDevices[symbol]);
+                    device.parent($(this));
+                    device.draw();
                 });
             }
         });

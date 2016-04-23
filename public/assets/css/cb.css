@@ -273,3 +273,40 @@ body:not(.top-nav) .sidebar .sidebar-header .img-avatar{
 aside .nav-tabs .nav-item + .nav-item {
     margin: 0;
 }
+
+aside .avatar {
+    width: 50px;
+}
+
+aside .pull-left {
+    height: 70px;
+}
+
+aside hr {
+    margin-top: 0px;
+    margin-bottom: 5px;
+}
+aside .device-element {
+    width: 50px;
+    height: 70px;
+}
+
+
+.device-container {
+    position: relative;
+    width: 100%;
+    cursor: move;
+    border: 1px solid black;
+    border-radius: 3px;
+}
+
+.device-container .controls-container {
+    width: 100%;
+    position: relative;
+}
+
+.device-container .controls-container div {
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
