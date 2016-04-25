@@ -156,10 +156,11 @@ var Model = function(opt,logger) {
             
         },
         
-        getAll: function() {
+        getAll: function(cb) {
             var ret={recordsTotal:0,data:getData()};
             ret.recordsTotal=ret.data.length;
-            return ret;    
+            if (cb!=null) cb(ret);
+            else return ret;    
         },
         
         get: function(idx) {
@@ -223,7 +224,7 @@ var Model = function(opt,logger) {
             return  Object.keys(data).length;
         },
         
-        add: function(d) {
+        add: function(d,cb) {
             idx=createIndex(d);
      
             if (idx=='_' && index.length==1) {
@@ -237,6 +238,7 @@ var Model = function(opt,logger) {
             for (var k in d) {
                 data[idx][k]=d[k];
             }
+            if (cb) cb(idx);
 
             lastSet=Date.now();
             return d;
