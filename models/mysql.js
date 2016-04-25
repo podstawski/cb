@@ -103,6 +103,29 @@ var Model = function(opt,logger) {
        
     }
     
+    var where2whereObj = function(where,cb) {
+        var obj={};
+        for (var i=0; i<where.length; i++) {
+            for (var k in where[i]) {
+                obj[k]=where[i];
+            }
+        }
+        checkFields(obj,function(){
+            var ors=[],ands;
+            var v=[];
+            for (var i=0; i<where.length; i++) {
+                ands=[];
+                for (var k in where[i]) {
+                    ands.push(k+'=?');
+                    v.push(where[i]);
+                }
+                ors.push('('+ands.join(' AND ')+')');
+            }
+            cb({where:ors.join(' OR '),values:v});
+            
+        });
+    }
+    
     return {
         init: function () {
             connect(function(){
@@ -139,7 +162,23 @@ var Model = function(opt,logger) {
         get: function(idx) {
         },
         
-        select: function (where,order) {
+        select: function (where,order,cb) {
+            var sql="SELECT * FROM "+opt.table;
+            var orderby='';
+            if (order) orderby=' ORDER BY '+order.join(',');
+            
+            if (where) {
+                where2whereObj(where,function(obj){
+                    sql+=' WHERE '+obj.where;
+                    connection.query(sql+orderby,obj.values,function(err, rows) {
+                        if (!err) cb({recordsTotal:rows.length,data:rows});
+                    });
+                });
+            } else {
+                 connection.query(sql+orderby,function(err, rows) {
+                    if (!err) cb({recordsTotal:rows.length,data:rows});
+                });
+            }
         },
         
         set: function(d,idx,cb) {
@@ -163,7 +202,21 @@ var Model = function(opt,logger) {
             });
         },
         
-        count: function() {
+        count: function(where,cb) {
+            var sql="SELECT count(*) AS c FROM "+opt.table;
+            if (where) {
+                where2whereObj(where,function(obj){
+                    sql+=' WHERE '+obj.where;
+                    connection.query(sql,obj.values,function(err, rows) {
+                        if (!err) cb(rows[0].c);
+                    });
+                });
+            } else {
+                 connection.query(sql,function(err, rows) {
+                    if (!err) cb(rows[0].c);
+                });
+            }
+            
         },
         
         add: function(d,cb) {
