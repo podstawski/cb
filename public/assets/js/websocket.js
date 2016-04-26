@@ -42,7 +42,7 @@ websocket.on('projects',function(data){
     }
     
     $('.sidebar .sidebar-header div strong').text(data.name);
-    $('.sidebar .sidebar-header div small').text(data.desc);
+    $('.sidebar .sidebar-header div small').text(data.description);
     
     if (typeof(data.img)!='undefined' && data.img.length>0) {
         $('#img_img,.sidebar .sidebar-header .img-avatar').attr('src',data.img);
@@ -54,11 +54,11 @@ websocket.on('projects',function(data){
     
     if (hash.indexOf('project.html')>0) {
         $('.page-title').text(data.name);
-        $('.page-desc').text(data.desc);
+        $('.page-desc').text(data.description);
         
         setBreadcrumbs([{name: data.name, href:'project.html,'+data.id}]);
 
-        toastr.info(data.desc, data.name, {
+        toastr.info(data.description, data.name, {
             closeButton: true,
             progressBar: true,
         });

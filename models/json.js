@@ -136,7 +136,7 @@ var Model = function(opt,logger) {
     
     
     return {
-        init: function () {
+        init: function (cb) {
             self.save();
             fs.readFile(file,function(error,d) {
                 if (error) {
@@ -144,13 +144,16 @@ var Model = function(opt,logger) {
                         if (error) {
                             data={};
                             fs.closeSync(fs.openSync(file, 'w'));
+                            if (cb) cb();
                         } else {
                             open(d);
+                            if (cb) cb();
                         }
                     });
                 } else {
                     logger.log("Opening "+file,'db');
                     open(d);
+                    if (cb) cb();
                 }
             });
             
@@ -163,14 +166,17 @@ var Model = function(opt,logger) {
             else return ret;    
         },
         
-        get: function(idx) {
+        get: function(idx,cb) {
             idx=createIndex(idx);
-            if (typeof(data[idx])=='undefined') return null;
             
-            return data[idx];
+            var ret=null;
+            if (typeof(data[idx])!='undefined') ret=data[idx];
+            
+            if (cb) cb(ret);
+            else return ret;
         },
         
-        select: function (where,order) {
+        select: function (where,order,cb,ctx) {
             var ret={};
                         
             for (var k in data) {    
@@ -190,13 +196,22 @@ var Model = function(opt,logger) {
                 }
             }
             
-            var ret={recordsTotal:0,data:ret2};
-            ret.recordsTotal=ret.data.length;            
+            var ret={recordsTotal:0,data:ret2,ctx:ctx};
+            ret.recordsTotal=ret.data.length;
             
-            return ret;
+            
+            if (cb) cb(ret);
+            else return ret;            
+            
         },
         
-        set: function(d,idx) {
+        set: function(d,idx,cb) {
+    
+            if (typeof(idx)=='function') {
+                cb=idx;
+                idx=createIndex(d);
+            }
+            
             if (idx==null) {
                 idx=createIndex(d);
             }
@@ -215,13 +230,29 @@ var Model = function(opt,logger) {
                 
             }
             
-            if (anythingChanged) lastSet=Date.now();
+            if (anythingChanged) {
+                data[idx]._updated=Date.now();
+                lastSet=Date.now();
+            }
             
-            return data[idx];
+            if (cb) cb(data[idx]);
+            else return data[idx];
         },
         
-        count: function() {
-            return  Object.keys(data).length;
+        count: function(where,cb) {
+            var c=0;
+            if (where) {
+                for (var k in data) {    
+                    if (condition(data[k],where)) {
+                        c++;
+                    }
+                }
+            } else {
+                c=Object.keys(data).length
+            }
+            
+            if (cb) cb(c)
+            else return  c;
         },
         
         add: function(d,cb) {
@@ -233,7 +264,7 @@ var Model = function(opt,logger) {
             }
            
             if (idx.length==0 ) return;
-            data[idx]={};
+            data[idx]={_updated:Date.now(),_created:Date.now()};
    
             for (var k in d) {
                 data[idx][k]=d[k];
@@ -241,16 +272,18 @@ var Model = function(opt,logger) {
             if (cb) cb(idx);
 
             lastSet=Date.now();
-            return d;
+            if (cb) cb(d);
+            else return d;
             
         },
         
-        remove: function (idx) {
+        remove: function (idx,cb) {
             idx=createIndex(idx);
             
             if (typeof(data[idx])!='undefined') {
                 delete(data[idx]);
                 lastSet=Date.now();
+                if (cb) cb();
             }
         },
         

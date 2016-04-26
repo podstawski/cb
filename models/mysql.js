@@ -5,6 +5,8 @@ var connections={};
 var Model = function(opt,logger) {
     var connection=null;
     var _fields;
+    
+    if (logger==null) logger=console;
 
     var connect = function (cb) {
         var token=opt.host+':'+opt.database;
@@ -22,7 +24,7 @@ var Model = function(opt,logger) {
                     cb();
                 } else {
                     connection=null;
-                    console.log('Error connecting database '+opt.database,'error',err);
+                    logger.log('Error connecting database '+opt.database,'error',err);
                 }
             });        
         }
@@ -69,12 +71,18 @@ var Model = function(opt,logger) {
     };
     
     var addFieldSql = function (k,v,cb) {
-        sql='ALTER TABLE '+opt.table+' ADD '+k+' ';
+        sql='ADD COLUMN '+k+' ';
+
         switch (typeof(v)) {
-            case 'numeric':
-                sql+='numeric';
+            case 'number':
+                if (String(v).indexOf('.')>0) {
+                    sql+='float(6)';
+                } else {
+                    sql+='bigint';    
+                }
+                
                 break;
-            case 'string':
+            default:
                 sql+='text';
         }
         
@@ -87,14 +95,16 @@ var Model = function(opt,logger) {
         var sql='';
     
         for (var k in d) {
-            if (_fields[k]===undefined) {
-                sql+=addFieldSql(k,d[k])+';';
+            if (typeof(_fields[k])=='undefined') {
+                sql+=addFieldSql(k,d[k])+',';
             }
         }
         if (sql.length==0) {
             cb();
         } else {
-            connection.query(sql, function(err, rows, fields) {
+            
+            sql='ALTER TABLE '+opt.table+' '+sql.substr(0,sql.length-1);
+            connection.query(sql, function(err, rows) {
                 if (!err) {
                     getFields(cb);
                 }
@@ -124,10 +134,41 @@ var Model = function(opt,logger) {
             cb({where:ors.join(' OR '),values:v});
             
         });
+    };
+    
+    
+    var json=function(obj) {
+        for (var k in obj) {
+            if (obj[k]==null) continue;
+            
+            if (typeof(obj[k])=='object') {
+                obj[k]='json:'+JSON.stringify(obj[k]);
+            } else if (typeof(obj[k])=='string' && obj[k].substr(0,5)=='json:') {
+                obj[k]=JSON.parse(obj[k].substr(5));
+            }
+        }
+        return obj;
     }
     
+    var jsona=function(a) {
+        for (var i=0; i<a.length; i++) json(a[i]);
+        
+        return a;
+    }
+
+    var getOne=function(idx,cb) {
+        var sql="SELECT * FROM "+opt.table+" WHERE "+indexCondition(idx);
+        connection.query(sql,function(err,rows) {
+            if (!err && rows.length>0) cb(json(rows[0]));
+            else cb(null);
+        });          
+        
+    };
+
+
+    
     return {
-        init: function () {
+        init: function (cb) {
             connect(function(){
                 var sql='SELECT * FROM information_schema.tables WHERE table_schema = \''+opt.database+'\' AND table_name = \''+opt.table+'\' LIMIT 1;';
                 connection.query(sql, function(err, rows, fields) {
@@ -136,14 +177,14 @@ var Model = function(opt,logger) {
                         for (var i=0;i<opt.index.length;i++) {
                             sql+=opt.index[i]+' INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, ';
                         }
-                        sql+='_created INT(6), ';
-                        sql+='_updated INT(6)';
+                        sql+='_created BIGINT, ';
+                        sql+='_updated BIGINT';
                         sql+=');';
                         connection.query(sql,function() {
-                            getFields();
+                            getFields(cb);
                         });
                     } else {
-                        getFields();
+                        getFields(cb);
                     }
                     
                 });
@@ -154,15 +195,16 @@ var Model = function(opt,logger) {
         getAll: function(cb) {
             var sql='SELECT * FROM '+opt.table;
             connection.query(sql, function(err, rows, fields) {
-                cb({recordsTotal:rows.length,data:rows});
+                cb({recordsTotal:rows.length,data:jsona(rows)});
             });
             
         },
         
-        get: function(idx) {
+        get: function(idx,cb) {
+            return getOne(idx,cb);
         },
         
-        select: function (where,order,cb) {
+        select: function (where,order,cb,ctx) {
             var sql="SELECT * FROM "+opt.table;
             var orderby='';
             if (order) orderby=' ORDER BY '+order.join(',');
@@ -171,20 +213,28 @@ var Model = function(opt,logger) {
                 where2whereObj(where,function(obj){
                     sql+=' WHERE '+obj.where;
                     connection.query(sql+orderby,obj.values,function(err, rows) {
-                        if (!err) cb({recordsTotal:rows.length,data:rows});
+                        if (!err) cb({recordsTotal:rows.length,data:jsona(rows),ctx:ctx});
+                        else cb({recordsTotal:0,data:[],ctx:ctx});
                     });
                 });
             } else {
                  connection.query(sql+orderby,function(err, rows) {
-                    if (!err) cb({recordsTotal:rows.length,data:rows});
+                    if (!err) cb({recordsTotal:rows.length,data:jsona(rows),ctx:ctx});
+                    else cb({recordsTotal:0,data:[],ctx:ctx});
                 });
             }
         },
         
         set: function(d,idx,cb) {
+            if (typeof(idx)=='function') {
+                cb=idx;
+                idx=d[opt.index[0]];
+            }
+            
             var set='_updated=?';
             var values=[Date.now()];
             
+            json(d);
             checkFields(d,function(){
                 for (var k in d) {
                     if (k=='_updated' || k=='_created') {
@@ -196,8 +246,8 @@ var Model = function(opt,logger) {
                 }
                             
                 var sql='UPDATE '+opt.table+' SET '+set+' WHERE '+indexCondition(idx);
-                connection.query(sql, values, function(err, rows, fields) {
-                    if (!err && cb!=null) cb(); 
+                connection.query(sql, values, function(err, res) {
+                    if (!err && cb!=null) getOne(idx,cb);
                 });
             });
         },
@@ -208,7 +258,8 @@ var Model = function(opt,logger) {
                 where2whereObj(where,function(obj){
                     sql+=' WHERE '+obj.where;
                     connection.query(sql,obj.values,function(err, rows) {
-                        if (!err) cb(rows[0].c);
+                        if (!err && rows.length>0) cb(rows[0].c);
+                        else cb(0);
                     });
                 });
             } else {
@@ -220,27 +271,44 @@ var Model = function(opt,logger) {
         },
         
         add: function(d,cb) {
-            var inserts='_created,_updated';
-            var values=Date.now()+','+Date.now();
+
+            d['_created']=Date.now();
+            d['_updated']=Date.now();
             
-            d._created=Date.now();
-            d._updated=Date.now();
+            json(d);
             
             checkFields(d,function(){
                 connection.query('INSERT INTO '+opt.table+' SET ?',d,function(err,res){
-                    if (!err) cb(res.insertId);
+                    if (!err && cb) getOne(res.insertId,cb);
                 });
             });
             
         },
         
-        remove: function (idx) {
+        remove: function (idx,cb) {
+            var sql="DELETE FROM ".opt.table+" WHERE "+indexCondition(idx);
+            connection.query(sql,function(err,res) {
+                if (!err) cb();
+            });
         },
         
         index: function(data) {
         },
         
-        max: function(element,where) {
+        max: function(element,where,cb) {
+            var sql="SELECT max("+element+") AS m FROM "+opt.table;
+            if (where) {
+                where2whereObj(where,function(obj){
+                    sql+=' WHERE '+obj.where;
+                    connection.query(sql,obj.values,function(err, rows) {
+                        if (!err) cb(rows[0].m);
+                    });
+                });
+            } else {
+                 connection.query(sql,function(err, rows) {
+                    if (!err) cb(rows[0].m);
+                });
+            }            
         },
         
         ultimateSave: function () {

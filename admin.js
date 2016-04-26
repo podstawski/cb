@@ -31,7 +31,6 @@ var Admin = function(socket,session,hash,database,public_path) {
         var name=images+'/'+obj.name+'.'+obj.ext;
         
         var path_name=path.dirname(public_path+'/'+name);
-        console.log(path_name);
         try {
             fs.lstatSync(path_name);    
         } catch(e) {
@@ -56,50 +55,76 @@ var Admin = function(socket,session,hash,database,public_path) {
         
     }
  
+ 
     var wallStructure = function (project,all) {
         if (!loggedIn) return;
-        
         if (all==null) all=false;
         
-        var structure=database.structure.select([{project:project,parent:null}],['pri','name']);
         
-        var name=database.projects.get(project).name;
-        
-        for (var i=0; i<structure.data.length; i++) {
-          
-            structure.data[i].parent=null;
-            structure.data[i].desc=name;
-            structure.data[i]._new=false;
-            if (typeof(structure.data[i]._created)!='undefined' && structure.data[i]._created+30*60*1000>new Date().getTime()) {
-                structure.data[i]._new=true;
-            }
-          
-            var sub=database.structure.select([{project:project,parent:structure.data[i].id}],['pri','name']);
-          
-            for (var j=0; j<sub.data.length; j++) {
-                sub.data[j]._new=false;
-                sub.data[j].desc=structure.data[i].name;
-            
-                if (typeof(sub.data[j]._created)!='undefined' && sub.data[j]._created+30*60*1000>new Date().getTime()) {
-                  sub.data[j]._new=true;
-                }        
-            }
-            structure.data[i]._sub=false;
-            if (sub.data.length>0) {
-                  structure.data[i]._sub=sub.data;
-            }
-          
-        }
-        
-        
-        if (!all) socket.emit('structure-all',structure);
-        else {
-            for (var h in session) {    
-                if (typeof(session[h].socket)!='undefined' && session[h].socket!=null && typeof(session[h].project)!='undefined' && session[h].project==project) {
-                  session[h].socket.emit('structure-all',structure);
+        database.projects.get(project,function(rec){
+            var name=rec.name;
+
+            database.structure.select([{project:project,parent:null}],['pri','name'],function(structure){
+
+                var subs=structure.data.length;
+                for (var i=0; i<structure.data.length; i++) {
+                  
+                    structure.data[i].parent=null;
+                    structure.data[i].description=name;
+                    structure.data[i]._new=false;
+                    if (typeof(structure.data[i]._created)!='undefined' && structure.data[i]._created+30*60*1000> Date.now()) {
+                        structure.data[i]._new=true;
+                    }
+                  
+                    structure.data[i]._sub=false;
+                    database.structure.select([{project:project,parent:structure.data[i].id}],['pri','name'],function(sub) {
+                        subs--;
+                        
+                        for (var j=0; j<sub.data.length; j++) {
+                            sub.data[j]._new=false;
+                            sub.data[j].description=structure.data[i].name;
+                        
+                            if (typeof(sub.data[j]._created)!='undefined' && sub.data[j]._created+30*60*1000>new Date.now()) {
+                                sub.data[j]._new=true;
+                            }        
+                        }
+                        
+                        if (sub.data.length>0) {
+                              structure.data[sub.ctx]._sub=sub.data;
+                        }
+                    
+                        
+                    },i);
+                  
                 }
-            }      
-        }
+                
+                setTimeout(function(){
+                    if (subs>0) {
+                        setTimeout(this._onTimeout,100);
+                        return;
+                    }
+
+                    if (!all) socket.emit('structure-all',structure);
+                    else {
+                        for (var h in session) {    
+                            if (typeof(session[h].socket)!='undefined' && session[h].socket!=null && typeof(session[h].project)!='undefined' && session[h].project==project) {
+                              session[h].socket.emit('structure-all',structure);
+                            }
+                        }      
+                    }
+                
+                },0);
+                
+            
+            });
+            
+            
+
+
+            
+        });
+        
+
     }
     
     
@@ -108,27 +133,36 @@ var Admin = function(socket,session,hash,database,public_path) {
         
         
         if (loggedIn) {
-  
-            var projects=database.projects.select(null,['name']);
-            if (all) {
-                for (var h in session) {    
-                    if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
-                        session[h].socket.emit('projects-all',projects);
+            
+            database.projects.select(null,['name'],function(projects){
+          
+                if (all) {
+                    for (var h in session) {    
+                        if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
+                            session[h].socket.emit('projects-all',projects);
+                        }
                     }
+                } else {
+                    socket.emit('projects-all',projects);
                 }
-            } else {
-                socket.emit('projects-all',projects);
-            }
+
+
+            });
+  
+
         }
     }
     
     var wallDevices = function () {
         if (loggedIn) {
-            for (var h in session) {    
-                if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
-                  session[h].socket.emit('devices-all',database.devices.getAll());
+            database.devices.getAll(function(devices){
+                for (var h in session) {    
+                    if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
+                      session[h].socket.emit('devices-all',devices);
+                    }
                 }
-            }
+            });
+            
         }
     }
     
@@ -170,11 +204,18 @@ var Admin = function(socket,session,hash,database,public_path) {
         if (typeof(database[db])=='undefined') return;
         if (typeof(d.id)=='undefined') d.id=0;
 
+        
+        var dependencies=0;
+        
         if (db=='structure' && parseInt(d.id)==0) {
             d.project=session[hash].project;
-            d.pri=database[db].max('pri',[{project: d.project}])+1;
+            dependencies++;
+                  
+            database[db].max('pri',[{project: d.project}],function(m){
+                d.pri=m+1;
+                dependencies--;
+            });
         }
-      
       
         var img_blob=null;
         
@@ -184,30 +225,49 @@ var Admin = function(socket,session,hash,database,public_path) {
                 d.img='';
             }
         }
-              
-        d._updated=new Date().getTime();
         
-        if (parseInt(d.id)==0) {
-            delete(d.id);
-            d._created=d._updated;
-            d=database[db].add(d);
-        } else {
-            d=database[db].set(d);
-        }
+        setTimeout(function(){
+            
+            if (dependencies>0) {
+                setTimeout(this._onTimeout,100);
+                return;
+            }
+            
+            var fun;
+            if (parseInt(d.id)==0) {
+                delete(d.id);
+                fun=database[db].add;
+            } else {
+                fun=database[db].set;
+            }
+
+            
+            fun(d,function(rec){
+                
+                if (img_blob!=null) {
+                    img_blob.name=db+'-'+d.id;
+                    d.img=fileSaveData(img_blob);
+                    d=database[db].set(d);
+                }
+    
+                socket.emit(db,d);
+                
+                if (db=='projects') {
+                    session[hash].project=d.id;
+                    wallProjects();
+                }
+                if (db=='structure') wallStructure(session[hash].project,true);
+                if (db=='devices') wallDevices();
+                if (db=='floor' && typeof(d.floor)!='undefined') wallFloor(d.floor);
+
+            });
+            
         
-        if (img_blob!=null) {
-            img_blob.name=db+'-'+d.id;
-            d.img=fileSaveData(img_blob);
-            d=database[db].set(d);
-        }
-        socket.emit(db,d);
-        if (db=='projects') {
-            session[hash].project=d.id;
-            wallProjects();
-        }
-        if (db=='structure') wallStructure(session[hash].project,true);
-        if (db=='devices') wallDevices();
-        if (db=='floor' && typeof(d.floor)!='undefined') wallFloor(d.floor);
+        
+        
+        },0);
+        
+        
     });
     
     socket.on('db-remove',function(db,idx){
@@ -215,51 +275,63 @@ var Admin = function(socket,session,hash,database,public_path) {
         
         if (typeof(database[db])=='undefined') return;
         
-        if (db=='floor') {
-          var floor=database[db].get(idx);
-        }
+        database[db].get(idx,function(rec){
+            database[db].remove(idx,function(){
+                if (db=='projects') wallProjects(true);
+                if (db=='structure') wallStructure(session[hash].project);
+                if (db=='devices') wallDevices();    
+                if (db=='floor') wallFloor(rec.floor);
+            
+            });
+        });
         
-        database[db].remove(idx);
     
-        if (db=='projects') wallProjects(true);
-        if (db=='structure') wallStructure(session[hash].project);
-        if (db=='devices') wallDevices();    
-        if (db=='floor') wallFloor(floor.floor);
     });
     
     socket.on('db-select',function(db,where,order) {
         if (!loggedIn) return;
         if (typeof(database[db])=='undefined') return;
-        var ret=database[db].select(where,order);            
-        socket.emit(db+'-select',ret);
+        database[db].select(where,order,function(ret){
+            socket.emit(db+'-select',ret);
+        });            
+        
     });
     
     socket.on('db-get',function(db,idx){
         if (!loggedIn) return;
         if (typeof(database[db])=='undefined') return;
         
+        
+        var afterGet=function(ret) {
+        
+            if (typeof(ret)=='object' && ret!=null) {
+            
+                if (idx==null) {
+                    socket.emit(db+'-all',ret);
+                } else {
+                    socket.emit(db,ret);
+                }
+                
+                if (db=='projects') {
+                    session[hash].project=idx;
+                    wallStructure(idx);
+                }
+                if (db=='structure') {
+                    session[hash].floor=idx;
+                }
+        
+            }
+
+            
+        }
+        
         if (idx==null) {
-            var ret=database[db].getAll();
+            database[db].getAll(afterGet);
         } else {
-            var ret=database[db].get(idx);
+            database[db].get(idx,afterGet);
         }
         
-        if (typeof(ret)=='object' && ret!=null) {
-        
-            if (idx==null) {
-                socket.emit(db+'-all',ret);
-            } else {
-                socket.emit(db,ret);
-            }
-            if (db=='projects') {
-                session[hash].project=idx;
-                wallStructure(idx);
-            }
-            if (db=='structure') {
-                session[hash].floor=idx;
-            }
-    
-        }
+
     });
     
     
@@ -287,7 +359,9 @@ var Admin = function(socket,session,hash,database,public_path) {
         socket.emit('login',{username:session[hash].username});
         wallProjects();
         if (typeof(session[hash].project)!='undefined') {
-            socket.emit('projects',database.projects.get(session[hash].project));
+            database.projects.get(session[hash].project,function(p){
+                socket.emit('projects',p);
+            });
             wallStructure(session[hash].project);
         }
     } else {

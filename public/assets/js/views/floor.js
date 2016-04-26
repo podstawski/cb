@@ -196,10 +196,10 @@ var floorDraw=function(data) {
     
     
     $('.page-header .page-title').text(data.name);
-    $('.page-header .page-desc').text(data.desc);
+    $('.page-header .page-desc').text(data.description);
     
     if (typeof(data.parent)=='undefined' || data.parent==null) {
-        setBreadcrumbs([{name: data.desc, href:'project.html,'+data.project},
+        setBreadcrumbs([{name: data.description, href:'project.html,'+data.project},
                        {name: data.name, href:'floor.html,'+data.id}]);
     }
     
