@@ -285,7 +285,7 @@ aside .nav-tabs .nav-item + .nav-item {
 }
 
 aside .avatar {
-    width: 50px;
+    width: 35px;
 }
 
 aside .pull-left {
@@ -302,13 +302,23 @@ aside .device-element {
 }
 
 
+
 .device-container {
     position: relative;
     width: 100%;
     cursor: move;
     border: 1px solid black;
     border-radius: 3px;
+    background-color: rgba(255,0,0,0.6);
 }
+
+#floor-container .draggable-container .device-container {
+    width: 35px;
+    height: 70px;
+    position: absolute;
+    z-index: 200;
+}
+
 
 .device-container .controls-container {
     width: 100%;
@@ -319,6 +329,14 @@ aside .device-element {
     position: absolute;
     background-repeat: no-repeat;
     background-size: 100%;
+}
+
+.device-container .device-label {
+    font-size: 10px;
+    text-align: center;
+    height: 32px;
+    color: #fff;
+    
 }
 
 .aside-edit .btn-danger {

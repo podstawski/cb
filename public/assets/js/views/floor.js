@@ -12,6 +12,7 @@ var dotW=16;
 var dotH=16;
 var uploadImage=null;
 var originalSvgWidth;
+var callingDevice;
 
 
 var zoomContainer = function(z) {
@@ -48,18 +49,29 @@ var zoomContainer = function(z) {
 
 }
 
-var calulatePoint = function(p) {
+var calculatePoint = function(p) {
     var zoom=zoomContainer();
-    var w=$('#floor-container .draggable-container').width();
-    var h=$('#floor-container .draggable-container').height();
-
-    var point={
-        x: p.x*w*zoom,
-        y: p.y*h
-    };
+    var w=parseFloat($('#floor-container .draggable-container').width());
+    var h=parseFloat($('#floor-container .draggable-container').height());
+    if (p.x > 1) w=parseFloat($('#floor-container').width());
+    
+    
+    if (p.x > 1) {
+        var point={
+            x: (p.x/zoom)/w,
+            y: (p.y/zoom)/h
+        };        
+    } else {
+        var point={
+            x: p.x*w*zoom,
+            y: p.y*h
+        };
+    }
     
     return point;
 }
+
+
 
 var moveElements = function() {
     for (var i=0;i<elements.length;i++) {
@@ -69,6 +81,11 @@ var moveElements = function() {
                 drawPolygon(elements[i].points,elements[i].id,elements[i].name,elements[i]);
                 break;
             }
+            case 'device': {
+                drawDeviceElement(elements[i].data,elements[i]);
+                break;
+            }
+            
         }
        
     }
@@ -83,7 +100,7 @@ var drawPolygonPoints = function() {
     for (var i=0; i<polygonPoints.length; i++) {
     
         xs.push(polygonPoints[i].x);
-        var p=calulatePoint(polygonPoints[i]);
+        var p=calculatePoint(polygonPoints[i]);
         var x=p.x - (dotW/2);
         var y=p.y - (dotH/2);
         
@@ -108,8 +125,9 @@ var calculateWH = function () {
 }
 
 var drawPolygon = function(points,id,name,element) {
+    
     var points2=[],p='';
-    for (var i=0; i<points.length; i++) points2.push(calulatePoint(points[i]));
+    for (var i=0; i<points.length; i++) points2.push(calculatePoint(points[i]));
 
     var minx=0,miny=0,maxx=0,maxy=0;
 
@@ -118,8 +136,8 @@ var drawPolygon = function(points,id,name,element) {
         
         //align to lines:
         for (var j=0; j<i; j++) {
-            if (Math.abs(points2[i].x-points2[j].x)<5) points2[i].x=points2[j].x;
-            if (Math.abs(points2[i].y-points2[j].y)<5) points2[i].y=points2[j].y;
+            if (Math.abs(points2[i].x-points2[j].x)<10) points2[i].x=points2[j].x;
+            if (Math.abs(points2[i].y-points2[j].y)<10) points2[i].y=points2[j].y;
         }
         //calculate bounds:
         if (points2[i].x<minx || minx==0) minx=points2[i].x;
@@ -173,6 +191,47 @@ var drawPolygon = function(points,id,name,element) {
         
     });
     return poli;
+}
+
+
+var drawDeviceElement = function(data,element) {
+    
+    if (!element) {
+        var device=new Device(data);
+        device.parent($('#floor-container .draggable-container'));
+        element={device: device, type: 'device', data: data, id: data.id};
+        elements.push(element);
+    } else {
+        var device=element.device;
+    }
+    
+    var ratio=0.6*$('#floor-container .draggable-container').width()/originalSvgWidth;
+    
+    device.draw({
+        containment: '#floor-container .draggable-container',
+        stop: function() {
+
+            var d={id:data.id};
+            var p=$(this).position();
+            p.x=p.left;
+            p.y=p.top;
+            d.point=calculatePoint(p);
+            
+            websocket.emit('db-save','floor',d);
+        }
+    },ratio);
+    
+    element.element = device.dom();
+    device.dom().addClass('element');
+    
+    var point=calculatePoint(data.point);
+    
+    device.dom().css({
+        top:point.y,
+        left:point.x
+    });
+    
+    return device.dom();
 }
 
 var removePolygonPoints=function() {
@@ -275,6 +334,10 @@ var floorDrawElements=function(data) {
                     drawPolygon(data[i].points,data[i].id,data[i].name);
                     break;
                 }
+                default: {
+                    drawDeviceElement(data[i]);
+                    break;
+                }
             }        
             
         }
@@ -344,9 +407,46 @@ $(function(){
                     var symbol=$(this).attr('rel');
                     var device=new Device(globalDevices[symbol]);
                     device.parent($(this));
-                    device.draw();
+                    device.draw({
+                        helper: "clone",
+                        stop: function() {
+                            var hlp=$('aside .device-element .ui-draggable-dragging');
+                            var ctn=$('#floor-container');
+                            if (hlp.offset().top>ctn.offset().top
+                                &&
+                                hlp.offset().top<ctn.offset().top+ctn.height()
+                                &&
+                                hlp.offset().left>ctn.offset().left
+                                &&
+                                hlp.offset().left<ctn.offset().left+ctn.width()
+                                ){
+                                    var zoom=zoomContainer();
+                                    var w=parseFloat($('#floor-container').width());
+                                    var h=parseFloat($('#floor-container .draggable-container').height());
+                                    ctn=$('#floor-container .draggable-container');
+                                    
+                                    var data=device.attr();
+                                    
+                                    data.point={
+                                        x:((hlp.offset().left - ctn.offset().left)/zoom)/w,
+                                        y:((hlp.offset().top - ctn.offset().top)/zoom)/h
+                                    }                                
+
+                                    data.floor=thisfloor;
+                                    data.type=symbol;
+                                    data.controls=globalDevices[symbol].controls||[];
+                                    
+                                    websocket.emit('db-save','floor',data);
+                                
+                            }
+                            
+                        }
+                        
+                    });
                     
                     device.dom().dblclick(function(){
+                        
+                        callingDevice=device;
                         $('#edit-element').addClass('aside-edit');
                         $('#edit-element input[name="name"]').val(device.attr('name'));                        
                         $('#edit-element').modal('show');
@@ -370,7 +470,6 @@ $(function(){
                         }
                         
                         
-                        console.log(data);
                         $.smekta_file('views/smekta/aside-device.html',data,'#edit-element .modal-body',function(){
                             $('#edit-element .modal-body .translate').translate();
                         });
@@ -430,6 +529,13 @@ $(function(){
             }
             
             websocket.emit('db-save','floor',data);            
+        } else {
+            for (var k in data) {
+                if (data[k]!==undefined) {
+                    callingDevice.attr(k,data[k]);
+                }
+            }
+            callingDevice.draw();
         }
         
 

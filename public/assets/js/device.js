@@ -2,21 +2,36 @@ var Device = function(device) {
     var _self=this;
     var _dom=null,_parent=null;
     var _attr={};
+    var _default={};
     
     _attr.name=$.translate(device.name);
     _attr.label=device.label || '';
     
-    var draw = function() {
-        if (_dom!=null) return _self; 
-    
+    var redraw=function(ratio) {
+        _dom.attr('title',_attr.name);
+        _dom.find('.device-label').text(_attr.label);
         
-        _dom=$('<div class="device-container" title="'+$.translate(device.name)+'"></div>');
+        _dom.width(ratio*_default.width);
+        _dom.height(ratio*_default.height);
+        _dom.find('.controls-container').height(ratio*_default.devicesHeight);
+        _dom.find('.device-label').height(ratio*_default.labelHeight);
+        _dom.find('.device-label').css('font-size',(ratio*_default.fontSize)+'px');
+ 
+        return _self;
+    }
+    
+    var draw = function(dragOptions,ratio) {
+        if (ratio==null) ratio=1;
+        if (_dom!=null) return redraw(ratio);
+  
+        
+        _dom=$('<div class="device-container" title="'+_attr.name+'"></div>');
         _parent.append(_dom);
         
         var controls=$('<div class="controls-container"></div>');
         _dom.append(controls);
         
-        var label=$('<div class="device-label"></div>');
+        var label=$('<div class="device-label">'+_attr.label+'</div>');
         _dom.append(label);
         
         if (device.controls!==undefined) {
@@ -44,14 +59,20 @@ var Device = function(device) {
             });
         }
         
-        _dom.draggable({
-            helper: "clone"
-        });
-
+        _dom.draggable(dragOptions);
+        
+        _default.labelHeight=label.height();
+        _default.width=_dom.width();
+        _default.height=_dom.height();
+        
+        _default.devicesHeight=controls.height();
+        
+        _default.fontSize=parseInt(label.css('font-size'));
     }
     
     
     return {
+
         dom: function(dom) {
             if (dom!=null) _dom=dom;
             return _dom;
@@ -60,8 +81,8 @@ var Device = function(device) {
             if (parent!=null) _parent=parent;
             return _parent;
         },
-        draw: function() {
-            return draw();
+        draw: function(dragOptions,ratio) {
+            return draw(dragOptions,ratio);
         },
         attr: function(attr,val) {
             if (attr==null) return _attr;
