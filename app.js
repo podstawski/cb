@@ -5,13 +5,17 @@ var jsonm = require('./models/json');
 var admin = require('./admin');
 var mysqlm = require('./models/mysql');
 
+var port=3000;
+
+
+if (process.argv[2]!==undefined) port=parseInt(process.argv[2]);
 
 
 app.use(express.static('public'));
 
 
-var io = require('socket.io').listen(app.listen(3000, function () {
-  console.log('App listening on port 3000!');
+var io = require('socket.io').listen(app.listen(port, function () {
+  console.log('App listening on port',port);
 }));
 
 
