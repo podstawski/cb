@@ -291,8 +291,11 @@ var Model = function(opt,logger) {
             return createIndex(data);
         },
         
-        max: function(element,where) {
-            return max_element(element,where);  
+        max: function(element,where,cb) {
+            var m=max_element(element,where);
+            
+            if (cb) cb(m);
+            else return m;
         },
         
         ultimateSave: function () {

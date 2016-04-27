@@ -180,6 +180,7 @@ var Admin = function(socket,session,hash,database,public_path) {
     var wallDevices = function () {
         if (loggedIn) {
             database.devices.getAll(function(devices){
+                
                 for (var h in session) {    
                     if (typeof(session[h].socket)!='undefined' && session[h].socket!=null) {
                       session[h].socket.emit('devices-all',devices);
