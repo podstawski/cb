@@ -1,3 +1,12 @@
+/**
+ * @author Piotr Podstawski <piotr@webkameleon.com>
+ */
+
+
+
+/*
+ * columns definitions for DataTable
+ */
 var devicesColumns=[
 	{ title: $.translate("Name"), data: "name" },
     { title: $.translate("Symbol"), data: "symbol" },
@@ -13,8 +22,17 @@ var devicesColumns=[
 ];
 
 var devicesData={};
+
+/*
+ *callingControl
+ *after fireing control edit we need context - id
+ */
 var callingControl=null;
 
+/*
+ * function: devicesTableDraw
+ * called from websocket on data ready
+ */
 var devicesTableDraw = function(data) {
 
 	devicesData={};
@@ -43,7 +61,10 @@ var devicesTableDraw = function(data) {
     datatable.draw();
 }
 
-
+/*
+ *if symbol is empty - disable device drawing
+ *otherwise enable it
+ */
 var toggleDisabled = function() {
 	var symbol=$('#edit-device input[name="symbol"]');
 	
@@ -56,6 +77,10 @@ var toggleDisabled = function() {
     }
 }
 
+/*
+ *draw a control
+ *obj: object in DOM, if null: we should add one
+ */
 var addControl = function (obj,data) {
 	
 	var dst=$('#edit-device .device-controls-container');
@@ -65,12 +90,16 @@ var addControl = function (obj,data) {
 		for(var k in data) {
 			obj.attr(k,data[k]);
 		}
+
+		
 		obj.css({
 			left: data.x*dst.width(),
 			top: data.y*dst.height(),
-			width: data.w*dst.width()*1.01,
-			height:data.h*dst.height()*1.06
+			width: data.w*dst.width(),
+			height:data.h*dst.height()
 		});
+	
+		
 	}
 	
 	obj.appendTo(dst);
@@ -133,12 +162,23 @@ var displayFileList = function(dir,files) {
 
 		$.smekta_file('views/smekta/control-images.html',{files:f},'#edit-control ul.images',function(){
 		
+			/*
+			 *image click: rewrite image url to background-image style
+			 */
 			$('.uploaded-images').click(function() {
 				var img=$(this).parent().find('input').val();
 				if ($('#edit-control #state').val().length>0) {
                     img=img.replace($('#edit-control #state').val(),'__STATE__');
                 }
 				$('#edit-control #sstyle').val('background-image: url(images/'+dir+'/'+img+')')
+			});
+			
+			/*
+			 *trash icon click on image list
+			 */
+			$('#edit-control .modal-body ul.images li i').click(function(){
+				var f=$(this).parent().find('input').attr('rel');
+				websocket.emit('remove-file',f);
 			});
 		
 		});
@@ -188,6 +228,9 @@ var startDraggingLabels = function() {
 
 $(function(){
 	
+	/*
+	 *DataTable init
+	 */
 	$('.devicetable').DataTable({
 		language: {
 			url: "assets/js/datatables/"+$.translateLang()+".json"
@@ -195,37 +238,62 @@ $(function(){
 		columns: devicesColumns
 	});
 
+	/*
+	 *set breadcrumbs path
+	 */
 	setBreadcrumbs([{name: $.translate('Devices'), href:'devices.html'}]);
 	
+	/*
+	 *plus icon click - fire: add empty record
+	 */
 	$('.devices .add-item').click(function(e) {
 		websocket.emit('db-save','devices',{});
 	});
 	
+	/*
+	 *request to get all devices
+	 */
 	websocket.emit('db-get','devices');
 
 	
 	if (typeof($.devicesInitiated)=='undefined') { //prevent multi event
+	
+		/*
+		 *when delete button clicked in table list
+		 *open confirm modal dialog
+		 */
 		$(document).on('click','.devicetable td a.btn-danger',function(e){
 			var id=$(this).parent().parent().attr('id');
 			$('#confirm-delete').attr('rel',id);
 			$('#confirm-delete .modal-header h4').text(devicesData[id].name);
 		});
 		
+		/*
+		 *when edit button clicked in table list
+		 *open edit modal dialog
+		 */
 		$(document).on('click','.devicetable td a.btn-info',function(e){
 			
+			$('#edit-device').modal('show');
 			var id=$(this).parent().parent().attr('id');
 			$('#edit-device').attr('rel',id);
+			
 			
 			$('#edit-device input[name="name"]').val(devicesData[id].name);
 			$('#edit-device input[name="symbol"]').val(devicesData[id].symbol);
 
+			/*
+			 *draw edit body
+			 */
 			$.smekta_file('views/smekta/device.html',devicesData[id],'#edit-device .modal-body',function(){
 				$('#edit-device .modal-body .translate').translate();
 				startDraggingLabels();
 				toggleDisabled();
 				$('#edit-device input[name="symbol"]').change(toggleDisabled);
 				
-				
+				/*
+				 *draw controls
+				 */
 				if (devicesData[id].controls !== undefined) {
                     for (var i=0; i<devicesData[id].controls.length; i++) {
 						addControl(null,devicesData[id].controls[i]);
@@ -238,11 +306,17 @@ $(function(){
 		$.devicesInitiated=true;
     }
 	
+	/*
+	 *remove confirmed
+	 */
 	$('#confirm-delete .btn-danger').click(function(e){
 		$('#confirm-delete').modal('hide');
 		websocket.emit('db-remove','devices',$('#confirm-delete').attr('rel'));
 	});
 
+	/*
+	 *save button in device edit
+	 */
 	$('#edit-device .btn-info').click(function(e){
 		$('#edit-device').modal('hide');
 		var data={id:$('#edit-device').attr('rel')};
@@ -256,6 +330,7 @@ $(function(){
 		$('#edit-device .device-controls-container div').each( function(){
 			if ($(this).attr('type')===undefined) return;
 			
+			$(this).resizable('destroy');
 			var control={};
 
 			for (var i=0;i<this.attributes.length; i++) {
@@ -269,21 +344,30 @@ $(function(){
 			var position=$(this).position();
 			control.x=position.left/$(this).parent().width();
 			control.y=position.top/$(this).parent().height();
-			control.w=$(this).width()/$(this).parent().width();
-			control.h=$(this).height()/$(this).parent().height();
-						
+			control.w=($(this).width()+2)/$(this).parent().width();
+			control.h=($(this).height()+2)/$(this).parent().height();
+			
+					
 			controls.push(control);
 		});
 
 		data.controls=controls;
 
-
+		/*
+		 *count inputs and outputs
+		 */
 		data.inputs=$('#edit-device .device-controls-container div[type="input"]').length;
 		data.outputs=$('#edit-device .device-controls-container div[type="output"]').length;
 	
+		/*
+		 *send save request
+		 */
 		websocket.emit('db-save','devices',data);
 	});
 
+	/*
+	 *upload new image icon clicked and user chose image
+	 */
 	$('#img-input').on('change',function(){
 		var d=$('#img-input').prop('files')[0];
 		if (typeof(d)!='undefined') {
@@ -299,6 +383,10 @@ $(function(){
 	
 	});
 	
+	
+	/*
+	 *edit control save button
+	 */
 	$('#edit-control .modal-footer .btn-info').click(function (){
 		$('#edit-control').modal('hide');
 		$('#edit-control input').each(function (){
@@ -312,5 +400,4 @@ $(function(){
 
 
 });
-
 

@@ -1,11 +1,16 @@
 var Device = function(device) {
     var _self=this;
     var _dom=null,_parent=null;
+    var _attr={};
+    
+    _attr.name=$.translate(device.name);
+    _attr.label=device.label || '';
     
     var draw = function() {
         if (_dom!=null) return _self; 
     
-        _dom=$('<div class="device-container" title="'+device.name+'"></div>');
+        
+        _dom=$('<div class="device-container" title="'+$.translate(device.name)+'"></div>');
         _parent.append(_dom);
         
         var controls=$('<div class="controls-container"></div>');
@@ -43,8 +48,6 @@ var Device = function(device) {
             helper: "clone"
         });
 
-        
-        
     }
     
     
@@ -59,6 +62,13 @@ var Device = function(device) {
         },
         draw: function() {
             return draw();
+        },
+        attr: function(attr,val) {
+            if (attr==null) return _attr;
+            if (val==null) return _attr[attr];
+            _attr[attr]=val;
+            return _self;
         }
+        
     }
 }

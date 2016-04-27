@@ -26,13 +26,16 @@ var buildAsideMenu = function(data) {
         data[i].tags=data[i].tags.replace(',',' ');
         data[i].tags=data[i].tags.replace(/ +/,' ');
         var t=data[i].tags.split(' ');
-        for (var j=0; j<t.length; j++) {tags[t[j]]=true}
+        for (var j=0; j<t.length; j++) {
+            if (t[j].length) tags[t[j]]=true;
+        }
         
         globalDevices[data[i].symbol]=data[i];
     }
 
     
     var tags2=[];
+ 
     for (var k in tags) tags2.push({tag:k});
 
     $.smekta_file('views/smekta/aside-devices.html',{tags:tags2,devices:data},'aside.aside-menu',function(){

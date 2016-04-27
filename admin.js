@@ -53,6 +53,28 @@ var Admin = function(socket,session,hash,database,public_path) {
             return [];
         }
         
+    };
+    
+    var fileUnlink = function(f,cb) {
+        var p=public_path +'/'+images+'/'+f;
+        try {
+            fs.unlink(p,cb);  
+        } catch(e) {
+            cb();
+        }
+      
+    };
+    
+    var fileExists=function(f) {
+        var p=public_path +'/'+images+'/'+f;
+
+        try {
+            fs.lstatSync(p);   
+        } catch(e) {
+            return false;
+        }
+                
+        return true;
     }
  
  
@@ -62,6 +84,8 @@ var Admin = function(socket,session,hash,database,public_path) {
         
         
         database.projects.get(project,function(rec){
+            if (rec==null) return;
+            
             var name=rec.name;
 
             database.structure.select([{project:project,parent:null}],['pri','name'],function(structure){
@@ -242,7 +266,8 @@ var Admin = function(socket,session,hash,database,public_path) {
             }
 
             
-            fun(d,function(rec){
+            fun(d,function(d){
+                
                 
                 if (img_blob!=null) {
                     img_blob.name=db+'-'+d.id;
@@ -339,16 +364,26 @@ var Admin = function(socket,session,hash,database,public_path) {
         var files=fileDirList(dir);
         var obj=fileUploadData(data);
         if (obj!=null) {
-            obj.name=dir+'/'+files.length;
+            var i=files.length;
+            while (fileExists(dir+'/'+i+'.'+obj.ext)) i++;
+        
+            obj.name=dir+'/'+i;
+            
             fileSaveData(obj);
             socket.emit('files',dir,fileDirList(dir));
         }
-        
+    });
+    
+    socket.on('remove-file',function(f){
+        fileUnlink(f,function(){
+            var dir=path.dirname(f);
+            socket.emit('files',dir,fileDirList(dir));
+        });
     });
     
     socket.on('files', function(dir) {
         socket.emit('files',dir,fileDirList(dir));
-    })
+    });
     
     
     //loggedIn=true;return;

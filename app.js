@@ -18,19 +18,21 @@ var io = require('socket.io').listen(app.listen(3000, function () {
 var database={};
 var session=[];
 
-/*
-database.projects = new model({file:'./data/projects',index:['id']});
-database.structure = new model({file:'./data/structure',index:['id']});
-database.floor = new model({file:'./data/floor',index:['id']});
-database.devices = new model({file:'./data/devices',index:['id']});
 
-*/
+database.projects = new jsonm({file:'./data/projects',index:['id']});
+database.structure = new jsonm({file:'./data/structure',index:['id']});
+database.floor = new jsonm({file:'./data/floor',index:['id']});
+database.devices = new jsonm({file:'./data/devices',index:['id']});
+
+/*
 
 
 database.projects = new mysqlm({host:'173.194.250.90',user:'cb',password:'cb',database:'cb',table:'projects2',index:['id']});
 database.structure = new mysqlm({host:'173.194.250.90',user:'cb',password:'cb',database:'cb',table:'structure',index:['id']});
 database.floor = new mysqlm({host:'173.194.250.90',user:'cb',password:'cb',database:'cb',table:'floor',index:['id']});
 database.devices = new mysqlm({host:'173.194.250.90',user:'cb',password:'cb',database:'cb',table:'devices',index:['id']});
+
+*/
 
 database.langs = new jsonm({file:'./data/langs',index:['label']});
 

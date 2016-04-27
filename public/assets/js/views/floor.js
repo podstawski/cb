@@ -1,3 +1,8 @@
+/**
+ * @author Piotr Podstawski <piotr@webkameleon.com>
+ */
+
+
 var polygonMode=false;
 var polygonPoints=[];
 var elements=[];
@@ -6,6 +11,7 @@ var thisfloor=0;
 var dotW=16;
 var dotH=16;
 var uploadImage=null;
+var originalSvgWidth;
 
 
 var zoomContainer = function(z) {
@@ -204,6 +210,7 @@ var floorDraw=function(data) {
     }
     
     $('#floor-container img.svg').attr('src',data.img).load(function(){
+        originalSvgWidth=$(this).width();
         calculateWH();
         websocket.emit('db-select','floor',[{floor:thisfloor}]);
     });
@@ -310,6 +317,9 @@ $(function(){
     if (typeof($.breadcrumbIconClick)=='undefined') {
         $.breadcrumbIconClick=true;
 
+        /*
+         *draw polygon mode toggler
+         */
         $(document).on('click',icon_selector,function(){
             if (polygonMode) {
                 polygonMode=false;
@@ -323,6 +333,9 @@ $(function(){
             }
         });
 
+        /*
+         *right sidebar with devices toggler
+         */
         $(document).on('click','.breadcrumb .breadcrumb-menu i.icon-menu',function(){
             
             if ($('body').hasClass('aside-menu-open')) {
@@ -332,6 +345,37 @@ $(function(){
                     var device=new Device(globalDevices[symbol]);
                     device.parent($(this));
                     device.draw();
+                    
+                    device.dom().dblclick(function(){
+                        $('#edit-element').addClass('aside-edit');
+                        $('#edit-element input[name="name"]').val(device.attr('name'));                        
+                        $('#edit-element').modal('show');
+                        
+                        var data={label_value:device.attr('label')};
+                        
+                        var vattr=globalDevices[symbol].vattr||'';
+                        if (vattr.length>0) {
+                            var attr=vattr.split(':');
+                            data.label=attr[0];
+                            if (attr.length>1) {
+                                data.select=[];
+                                var select=attr[1].split('|');
+                                for(var i=0;i<select.length;i++) {
+                                    data.select.push({
+                                        value: select[i],
+                                        selected: select[i]==data.label_value
+                                    });
+                                }
+                            }
+                        }
+                        
+                        
+                        console.log(data);
+                        $.smekta_file('views/smekta/aside-device.html',data,'#edit-element .modal-body',function(){
+                            $('#edit-element .modal-body .translate').translate();
+                        });
+                        
+                    });
                 });
             }
         });
@@ -346,6 +390,9 @@ $(function(){
     });
     
     
+    /*
+     *mousewheel: zoom in/out view
+     */
     $('#floor-container .draggable-container').bind('mousewheel', function(e){
         
         if(e.originalEvent.wheelDelta /120 > 0) zoomContainer(1.1);
@@ -362,6 +409,10 @@ $(function(){
 
     $(window).bind('resize', calculateWH);
     
+    
+    /*
+     *save element
+     */
     $('#edit-element .btn-info').click(function(){
         
 		$('#edit-element').modal('hide');
@@ -371,11 +422,19 @@ $(function(){
 			data[$(this).attr('name')]=$(this).val();
 		});
         
-        if (uploadImage!=null) {
-            data.img=uploadImage;
+        
+        if (!$('#edit-element').hasClass('aside-edit')) {
+            
+            if (uploadImage!=null) {
+                data.img=uploadImage;
+            }
+            
+            websocket.emit('db-save','floor',data);            
         }
         
-        websocket.emit('db-save','floor',data);
+
+        
+        $('#edit-element').removeClass('aside-edit');
         
     });
     
