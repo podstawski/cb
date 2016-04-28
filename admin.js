@@ -271,7 +271,9 @@ var Admin = function(socket,session,hash,database,public_path) {
                 
                 
                 if (img_blob!=null) {
-                    img_blob.name=db+'-'+d.id;
+                    var i=0;
+                    while (fileExists(db+'-'+d.id+'-'+i+'.'+img_blob.ext)) i++; 
+                    img_blob.name=db+'-'+d.id+'-'+i;
                     d.img=fileSaveData(img_blob);
                     d=database[db].set(d);
                 }

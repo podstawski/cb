@@ -20,7 +20,7 @@ var Device = function(device) {
         return _self;
     }
     
-    var draw = function(dragOptions,ratio) {
+    var draw = function(options,ratio) {
         if (ratio==null) ratio=1;
         if (_dom!=null) return redraw(ratio);
   
@@ -33,6 +33,7 @@ var Device = function(device) {
         
         var label=$('<div class="device-label">'+_attr.label+'</div>');
         _dom.append(label);
+        if (options.dblclickDevice!==undefined) label.dblclick(options.dblclickDevice);
         
         if (device.controls!==undefined) {
             for (var i=0;i<device.controls.length;i++) {
@@ -45,9 +46,14 @@ var Device = function(device) {
                     height: (device.controls[i].h*100)+'%'
                 });
                 
-                if (device.controls[i].state!==undefined && device.controls[i].state.length>0 && device.controls[i].sstyle!==undefined) {
+                if ( device.controls[i].sstyle!==undefined) {
                     var style=control.attr('style');
-                    style+=';'+device.controls[i].sstyle.replace('__STATE__',device.controls[i].state);
+                    var sstyle=device.controls[i].sstyle;
+                    if(device.controls[i].state!==undefined && device.controls[i].state.length>0) {
+                        sstyle=sstyle.replace('__STATE__',device.controls[i].state);
+                    }
+                    
+                    style+=';'+sstyle;
                     control.attr('style',style);
                 }
                 
@@ -59,7 +65,9 @@ var Device = function(device) {
             });
         }
         
-        _dom.draggable(dragOptions);
+        
+        
+        _dom.draggable(options);
         
         _default.labelHeight=label.height();
         _default.width=_dom.width();
@@ -81,8 +89,8 @@ var Device = function(device) {
             if (parent!=null) _parent=parent;
             return _parent;
         },
-        draw: function(dragOptions,ratio) {
-            return draw(dragOptions,ratio);
+        draw: function(options,ratio) {
+            return draw(options,ratio);
         },
         attr: function(attr,val) {
             if (attr==null) return _attr;

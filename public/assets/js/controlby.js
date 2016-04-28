@@ -45,6 +45,9 @@ var buildAsideMenu = function(data) {
             $('aside.aside-menu #devices .'+$(this).attr('rel')).show();
         });
         
+        if (typeof(drawAsideDevices) == 'function') {
+            drawAsideDevices();
+        }
     });
 
 }

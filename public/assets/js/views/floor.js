@@ -19,8 +19,6 @@ var zoomContainer = function(z) {
     
     var sel='#floor-container .draggable-container';
     var current=$(sel).css('zoom');
-    
-    
 
     if (current===undefined) {
         current=$(sel).css('-moz-transform');
@@ -53,14 +51,12 @@ var calculatePoint = function(p) {
     var zoom=zoomContainer();
     var w=parseFloat($('#floor-container .draggable-container').width());
     var h=parseFloat($('#floor-container .draggable-container').height());
-    if (p.x > 1) w=parseFloat($('#floor-container').width());
-    
     
     if (p.x > 1) {
         var point={
-            x: (p.x/zoom)/w,
-            y: (p.y/zoom)/h
-        };        
+            x: (p.x)/(w*zoom),
+            y: (p.y)/h
+        };
     } else {
         var point={
             x: p.x*w*zoom,
@@ -68,12 +64,15 @@ var calculatePoint = function(p) {
         };
     }
     
+    //console.log(p.x,p.y,'->',point.x,point.y,'w:'+w,'h:'+h,zoom);
+    
     return point;
 }
 
 
 
 var moveElements = function() {
+   
     for (var i=0;i<elements.length;i++) {
         switch (elements[i].type) {
             case 'polygon': {
@@ -81,7 +80,7 @@ var moveElements = function() {
                 drawPolygon(elements[i].points,elements[i].id,elements[i].name,elements[i]);
                 break;
             }
-            case 'device': {
+            default: {
                 drawDeviceElement(elements[i].data,elements[i]);
                 break;
             }
@@ -108,8 +107,7 @@ var drawPolygonPoints = function() {
         
     }
     
-    //console.log(xs);
-    //console.log(w,h,w*zoom,h*zoom);
+
 }
 
 
@@ -196,7 +194,11 @@ var drawPolygon = function(points,id,name,element) {
 
 var drawDeviceElement = function(data,element) {
     
-    if (!element) {
+    if (!element) { 
+        if (data.point.x<0 || data.point.y<0) {
+            if (data.id) websocket.emit('db-remove','floor',data.id);
+            return;
+        }
         var device=new Device(data);
         device.parent($('#floor-container .draggable-container'));
         element={device: device, type: 'device', data: data, id: data.id};
@@ -205,19 +207,33 @@ var drawDeviceElement = function(data,element) {
         var device=element.device;
     }
     
-    var ratio=0.6*$('#floor-container .draggable-container').width()/originalSvgWidth;
+    var ratio=0.6*$('#floor-container').width()/originalSvgWidth;
     
     device.draw({
-        containment: '#floor-container .draggable-container',
-        stop: function() {
+        stop: function(e,ui) {
 
             var d={id:data.id};
             var p=$(this).position();
+            
             p.x=p.left;
             p.y=p.top;
             d.point=calculatePoint(p);
-            
+
             websocket.emit('db-save','floor',d);
+        },
+        dblclickDevice: function(e) {
+            $('#edit-element .modal-header input').val(data.name);
+            $('#edit-element').attr('rel',data.id);
+            $('#edit-element .modal-body').html('');
+            $('#edit-element').modal('show');
+            
+            uploadImage=null;
+            
+            calculateLabelForSmekta(data,data.type);
+            
+            $.smekta_file('views/smekta/floor-device.html',data,'#edit-element .modal-body',function(){
+                $('#edit-element .modal-body .translate').translate();
+            });
         }
     },ratio);
     
@@ -319,7 +335,12 @@ var floorDrawElements=function(data) {
         for(var j=0; j<elements.length; j++) {
             if (data[i].id == elements[j].id) {
                 elements[j].toBeDeleted=false;
-                for( var k in data[i]) elements[j][k]=data[i][k];
+                if (data[i].type=='polygon') {
+                    for( var k in data[i]) elements[j][k]=data[i][k];
+                } else {
+                    for( var k in data[i]) elements[j].data[k]=data[i][k];
+                }
+                
                 matchFound=true;
                 break;
             }
@@ -360,6 +381,96 @@ var floorDrawElements=function(data) {
     
 }
 
+var calculateLabelForSmekta = function(data,symbol) {
+    var vattr=globalDevices[symbol].vattr||'';
+    data.label_name='';
+    if (vattr.length>0) {
+        var attr=vattr.split(':');
+        data.label_name=attr[0];
+        if (attr.length>1) {
+            data.select=[];
+            var select=attr[1].split('|');
+            for(var i=0;i<select.length;i++) {
+                data.select.push({
+                    value: select[i],
+                    selected: select[i]==data.label
+                });
+            }
+        }
+    }
+}
+
+
+/*
+ *draw devices in right sidebar
+ */
+
+var drawAsideDevices = function() {
+    $('aside .device-element').each(function(){
+        $(this).text('');
+        var symbol=$(this).attr('rel');
+        var device=new Device(globalDevices[symbol]);
+        device.parent($(this));
+        device.draw({
+            helper: "clone",
+            stop: function(e,ui) {
+                var ctn=$('#floor-container');
+                
+                if (ui.offset.top>ctn.offset().top
+                    &&
+                    ui.offset.top<ctn.offset().top+ctn.height()
+                    &&
+                    ui.offset.left>ctn.offset().left
+                    &&
+                    ui.offset.left<ctn.offset().left+ctn.width()
+                    ){
+                        var zoom=zoomContainer();
+                        var w=parseFloat($('#floor-container').width());
+                        var h=parseFloat($('#floor-container .draggable-container').height());
+                        
+                        ctn=$('#floor-container .draggable-container');
+                        
+                        var data=device.attr();
+                        
+                        data.point={
+                            x:((ui.offset.left - ctn.offset().left)/zoom)/w,
+                            y:((ui.offset.top - ctn.offset().top)/zoom)/h
+                        }
+                        
+
+                        data.floor=thisfloor;
+                        data.type=symbol;
+                        data.controls=globalDevices[symbol].controls||[];
+                        
+                        websocket.emit('db-save','floor',data);
+                    
+                }
+                
+            }
+            
+        });
+        
+        device.dom().dblclick(function(){
+            
+            callingDevice=device;
+            $('#edit-element').addClass('aside-edit');
+            $('#edit-element input[name="name"]').val(device.attr('name'));                        
+            $('#edit-element').modal('show');
+            
+            var data={label:device.attr('label')};
+            
+            calculateLabelForSmekta(data,symbol);            
+            
+            $.smekta_file('views/smekta/aside-device.html',data,'#edit-element .modal-body',function(){
+                $('#edit-element .modal-body .translate').translate();
+            });
+            
+        });
+    });
+    
+}
+
+
 $(function(){
 
     var hash=window.location.hash;
@@ -396,88 +507,6 @@ $(function(){
             }
         });
 
-        /*
-         *right sidebar with devices toggler
-         */
-        $(document).on('click','.breadcrumb .breadcrumb-menu i.icon-menu',function(){
-            
-            if ($('body').hasClass('aside-menu-open')) {
-                $('aside .device-element').each(function(){
-                    
-                    var symbol=$(this).attr('rel');
-                    var device=new Device(globalDevices[symbol]);
-                    device.parent($(this));
-                    device.draw({
-                        helper: "clone",
-                        stop: function() {
-                            var hlp=$('aside .device-element .ui-draggable-dragging');
-                            var ctn=$('#floor-container');
-                            if (hlp.offset().top>ctn.offset().top
-                                &&
-                                hlp.offset().top<ctn.offset().top+ctn.height()
-                                &&
-                                hlp.offset().left>ctn.offset().left
-                                &&
-                                hlp.offset().left<ctn.offset().left+ctn.width()
-                                ){
-                                    var zoom=zoomContainer();
-                                    var w=parseFloat($('#floor-container').width());
-                                    var h=parseFloat($('#floor-container .draggable-container').height());
-                                    ctn=$('#floor-container .draggable-container');
-                                    
-                                    var data=device.attr();
-                                    
-                                    data.point={
-                                        x:((hlp.offset().left - ctn.offset().left)/zoom)/w,
-                                        y:((hlp.offset().top - ctn.offset().top)/zoom)/h
-                                    }                                
-
-                                    data.floor=thisfloor;
-                                    data.type=symbol;
-                                    data.controls=globalDevices[symbol].controls||[];
-                                    
-                                    websocket.emit('db-save','floor',data);
-                                
-                            }
-                            
-                        }
-                        
-                    });
-                    
-                    device.dom().dblclick(function(){
-                        
-                        callingDevice=device;
-                        $('#edit-element').addClass('aside-edit');
-                        $('#edit-element input[name="name"]').val(device.attr('name'));                        
-                        $('#edit-element').modal('show');
-                        
-                        var data={label_value:device.attr('label')};
-                        
-                        var vattr=globalDevices[symbol].vattr||'';
-                        if (vattr.length>0) {
-                            var attr=vattr.split(':');
-                            data.label=attr[0];
-                            if (attr.length>1) {
-                                data.select=[];
-                                var select=attr[1].split('|');
-                                for(var i=0;i<select.length;i++) {
-                                    data.select.push({
-                                        value: select[i],
-                                        selected: select[i]==data.label_value
-                                    });
-                                }
-                            }
-                        }
-                        
-                        
-                        $.smekta_file('views/smekta/aside-device.html',data,'#edit-element .modal-body',function(){
-                            $('#edit-element .modal-body .translate').translate();
-                        });
-                        
-                    });
-                });
-            }
-        });
 
         
     }
@@ -526,6 +555,15 @@ $(function(){
             
             if (uploadImage!=null) {
                 data.img=uploadImage;
+            }
+            
+            for (var i=0; i<elements.length; i++) {
+                if (elements[i].id==data.id && elements[i].device!==undefined) {
+                    for(var k in data) {
+                        elements[i].device.attr(k,data[k]);
+                    }
+                    elements[i].device.draw();
+                }
             }
             
             websocket.emit('db-save','floor',data);            
