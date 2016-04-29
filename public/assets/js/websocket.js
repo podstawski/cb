@@ -102,9 +102,18 @@ websocket.on('devices-all', function(data) {
     buildAsideMenu(data.data);
 });
 
+/*
+websocket.on('inputs-all', function(data) {
+    if (typeof(inputsTableDraw)=='function' && $('.inputtable').length>0) {
+        inputsTableDraw(data.data); 
+    }
+});
+*/
 
 websocket.on('files', function(dir,data) {
     if (typeof(displayFileList)=='function' ) {
         displayFileList(dir,data); 
     }
 });
+
+

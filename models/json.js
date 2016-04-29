@@ -29,7 +29,7 @@ var Model = function(opt,logger) {
     
     var indexElement = function (ret) {
         
-        if (typeof(ret)=='number' || !isNaN(parseInt(ret))) {
+        if (typeof(ret)=='number' || ret.match(/^[0-9]+$/)) {
             var len=String(ret).length;
             var prefix='_';
             for (var i=0;i<16-len;i++) {
@@ -173,8 +173,10 @@ var Model = function(opt,logger) {
         get: function(idx,cb) {
             idx=createIndex(idx);
             
+            
             var ret=null;
             if (typeof(data[idx])!='undefined') ret=data[idx];
+            
             
             if (cb) cb(ret);
             else return ret;

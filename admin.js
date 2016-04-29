@@ -331,6 +331,8 @@ var Admin = function(socket,session,hash,database,public_path) {
         
         var afterGet=function(ret) {
         
+            if (ret==null && idx!=null) ret={};
+            
             if (typeof(ret)=='object' && ret!=null) {
             
                 if (idx==null) {
