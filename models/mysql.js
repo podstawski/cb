@@ -190,7 +190,7 @@ var Model = function(opt,logger) {
                         }
                         sql+='_created BIGINT, ';
                         sql+='_updated BIGINT';
-                        sql+=');';
+                        sql+=') DEFAULT CHARACTER SET=utf8;';
                         connection.query(sql,function() {
                             inited=true;
                             getFields(cb);
