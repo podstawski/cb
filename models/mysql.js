@@ -5,6 +5,7 @@ var connections={};
 var Model = function(opt,logger) {
     var connection=null;
     var _fields;
+    var inited=false;
     
     if (logger==null) logger=console;
 
@@ -181,9 +182,11 @@ var Model = function(opt,logger) {
                         sql+='_updated BIGINT';
                         sql+=');';
                         connection.query(sql,function() {
+                            inited=true;
                             getFields(cb);
                         });
                     } else {
+                        inited=true;
                         getFields(cb);
                     }
                     
@@ -312,7 +315,12 @@ var Model = function(opt,logger) {
         },
         
         ultimateSave: function () {
+        },
+        
+        inited: function () {
+            return inited;
         }
+ 
     }
 }
 

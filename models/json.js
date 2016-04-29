@@ -23,6 +23,7 @@ var Model = function(opt,logger) {
     var saveState=false;
     instances[file]=this;
     self=this;
+    var inited=false;
     
     if (logger==null) logger=console;
     
@@ -144,15 +145,18 @@ var Model = function(opt,logger) {
                         if (error) {
                             data={};
                             fs.closeSync(fs.openSync(file, 'w'));
+                            inited=true;
                             if (cb) cb();
                         } else {
                             open(d);
+                            inited=true;
                             if (cb) cb();
                         }
                     });
                 } else {
                     logger.log("Opening "+file,'db');
                     open(d);
+                    inited=true;
                     if (cb) cb();
                 }
             });
@@ -301,6 +305,10 @@ var Model = function(opt,logger) {
         ultimateSave: function () {
             logger.log('Ultimate save','db');
             saveModel(true);
+        },
+        
+        inited: function () {
+            return inited;
         }
  
         
