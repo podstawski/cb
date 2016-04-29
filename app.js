@@ -5,7 +5,7 @@ var jsonm = require('./models/json');
 var admin = require('./admin');
 var mysqlm = require('./models/mysql');
 
-var port=3000;
+var port=80;
 
 
 if (process.argv[2]!==undefined) port=parseInt(process.argv[2]);
