@@ -141,11 +141,7 @@ var Admin = function(socket,session,hash,database,public_path) {
                 
             
             });
-            
-            
 
-
-            
         });
         
 
@@ -192,12 +188,16 @@ var Admin = function(socket,session,hash,database,public_path) {
     }
     
     var wallFloor = function (floor) {
+      
         if (loggedIn) {
-            for (var h in session) {    
-                if (typeof(session[h].socket)!='undefined' && session[h].socket!=null && typeof(session[h].floor)!='undefined' && session[h].floor==floor) {
-                  session[h].socket.emit('floor-select',database.floor.select([{floor:floor}]));
-                }
-            }
+            database.floor.select([{floor:floor}],null,function(data){
+            
+                 for (var h in session) {    
+                     if (typeof(session[h].socket)!='undefined' && session[h].socket!=null && typeof(session[h].floor)!='undefined' && session[h].floor==floor) {
+                       session[h].socket.emit('floor-select',data);
+                     }
+                 }
+            });
         }
     }
 

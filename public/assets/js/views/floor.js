@@ -296,7 +296,7 @@ var floorDraw=function(data) {
     
     $('#floor-container .svg').click(function(e){
         
-        if (polygonMode && Date.now()-lastDragEvent>800) {
+        if (polygonMode && Date.now()-lastDragEvent>1500) {
             var zoom=zoomContainer();
             var ex = parseFloat(e.offsetX === undefined ? e.originalEvent.layerX : e.offsetX);
             var ey = parseFloat(e.offsetY === undefined ? e.originalEvent.layerY : e.offsetY);
