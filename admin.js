@@ -81,8 +81,7 @@ var Admin = function(socket,session,hash,database,public_path) {
     var wallStructure = function (project,all) {
         if (!loggedIn) return;
         if (all==null) all=false;
-        
-        
+                
         database.projects.get(project,function(rec){
             if (rec==null) return;
             
@@ -102,11 +101,11 @@ var Admin = function(socket,session,hash,database,public_path) {
                   
                     structure.data[i]._sub=false;
                     database.structure.select([{project:project,parent:structure.data[i].id}],['pri','name'],function(sub) {
-                        subs--;
+                        
                         
                         for (var j=0; j<sub.data.length; j++) {
                             sub.data[j]._new=false;
-                            sub.data[j].description=structure.data[i].name;
+                            sub.data[j].description=structure.data[sub.ctx].name;
                         
                             if (typeof(sub.data[j]._created)!='undefined' && sub.data[j]._created+30*60*1000>new Date.now()) {
                                 sub.data[j]._new=true;
@@ -117,6 +116,7 @@ var Admin = function(socket,session,hash,database,public_path) {
                               structure.data[sub.ctx]._sub=sub.data;
                         }
                     
+                        subs--;
                         
                     },i);
                   
@@ -132,7 +132,7 @@ var Admin = function(socket,session,hash,database,public_path) {
                     else {
                         for (var h in session) {    
                             if (typeof(session[h].socket)!='undefined' && session[h].socket!=null && typeof(session[h].project)!='undefined' && session[h].project==project) {
-                              session[h].socket.emit('structure-all',structure);
+                                session[h].socket.emit('structure-all',structure);
                             }
                         }      
                     }
@@ -228,12 +228,11 @@ var Admin = function(socket,session,hash,database,public_path) {
         if (!loggedIn) return;
         if (typeof(database[db])=='undefined') return;
         if (typeof(d.id)=='undefined') d.id=0;
-
         
         var dependencies=0;
         
         if (db=='structure' && parseInt(d.id)==0) {
-            d.project=session[hash].project;
+            d.project=parseInt(session[hash].project);
             dependencies++;
                   
             database[db].max('pri',[{project: d.project}],function(m){

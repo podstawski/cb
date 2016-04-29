@@ -73,9 +73,11 @@ var Model = function(opt,logger) {
     
     var addFieldSql = function (k,v,cb) {
         sql='ADD COLUMN '+k+' ';
-
-        switch (typeof(v)) {
-            case 'number':
+        var type=typeof(v);
+        if (v==null) type='number';
+        
+        switch (type) {
+            case 'number': {
                 if (String(v).indexOf('.')>0) {
                     sql+='float(6)';
                 } else {
@@ -83,9 +85,11 @@ var Model = function(opt,logger) {
                 }
                 
                 break;
+            }
             default:
                 sql+='text';
         }
+        
         
         return sql;
 
@@ -118,17 +122,23 @@ var Model = function(opt,logger) {
         var obj={};
         for (var i=0; i<where.length; i++) {
             for (var k in where[i]) {
-                obj[k]=where[i];
+                obj[k]=where[i][k];
             }
         }
+        
+        
         checkFields(obj,function(){
             var ors=[],ands;
             var v=[];
             for (var i=0; i<where.length; i++) {
                 ands=[];
                 for (var k in where[i]) {
-                    ands.push(k+'=?');
-                    v.push(where[i]);
+                    if (where[i][k]!=null) {
+                        ands.push(k+'=?');
+                        v.push(where[i][k]);
+                    } else {
+                        ands.push(k+' IS NULL');
+                    }
                 }
                 ors.push('('+ands.join(' AND ')+')');
             }
@@ -215,6 +225,7 @@ var Model = function(opt,logger) {
             if (where) {
                 where2whereObj(where,function(obj){
                     sql+=' WHERE '+obj.where;
+                    
                     connection.query(sql+orderby,obj.values,function(err, rows) {
                         if (!err) cb({recordsTotal:rows.length,data:jsona(rows),ctx:ctx});
                         else cb({recordsTotal:0,data:[],ctx:ctx});
@@ -229,7 +240,9 @@ var Model = function(opt,logger) {
         },
         
         set: function(d,idx,cb) {
-            if (typeof(idx)=='function') {
+            if (idx==null) {
+                idx=d[opt.index[0]];
+            } else if (typeof(idx)=='function') {
                 cb=idx;
                 idx=d[opt.index[0]];
             }
@@ -305,11 +318,13 @@ var Model = function(opt,logger) {
                     sql+=' WHERE '+obj.where;
                     connection.query(sql,obj.values,function(err, rows) {
                         if (!err) cb(rows[0].m);
+                        else cb(0);
                     });
                 });
             } else {
                  connection.query(sql,function(err, rows) {
                     if (!err) cb(rows[0].m);
+                    else cb(0);
                 });
             }            
         },

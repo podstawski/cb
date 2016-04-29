@@ -35,14 +35,17 @@ $(function() {
         websocket.emit('db-save','structure',{name: $.translate('New object')});
     });
 
-    $(document).on('change', '#project-structure input', function(e) {
-        websocket.emit('db-save','structure',{id:$(this).attr('rel'),name: $(this).val()});
-    });
+
    
    
     if (typeof($.projectStuffInitiated)=='undefined') {
         $.projectStuffInitiated=true;   
 
+            
+        $(document).on('change', '#project-structure input', function(e) {
+            websocket.emit('db-save','structure',{id:$(this).attr('rel'),name: $(this).val()});
+        });
+        
         $(document).on('click', '#project-structure .add-sub', function(e) {
             websocket.emit('db-save','structure',{parent:$(this).attr('rel'),name: $.translate('New object')});
         });

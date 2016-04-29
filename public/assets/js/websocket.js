@@ -41,6 +41,7 @@ websocket.on('projects',function(data){
         }
     }
     
+    
     $('.sidebar .sidebar-header div strong').text(data.name);
     $('.sidebar .sidebar-header div small').text(data.description);
     

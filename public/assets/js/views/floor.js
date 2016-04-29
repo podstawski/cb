@@ -275,6 +275,9 @@ var createPolygonFromPoints = function() {
 
 var floorDraw=function(data) {
     
+    if (data.description===undefined) {
+        data.description=$('.sidebar .sidebar-header strong').text();
+    }
     
     $('.page-header .page-title').text(data.name);
     $('.page-header .page-desc').text(data.description);
