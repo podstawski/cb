@@ -302,7 +302,8 @@ var Model = function(opt,logger) {
         },
         
         remove: function (idx,cb) {
-            var sql="DELETE FROM ".opt.table+" WHERE "+indexCondition(idx);
+            var sql="DELETE FROM "+opt.table+" WHERE "+indexCondition(idx);
+    
             connection.query(sql,function(err,res) {
                 if (!err) cb();
             });
