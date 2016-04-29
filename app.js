@@ -24,33 +24,12 @@ var database={};
 var session=[];
 var models={};
 
-for (var k in ini.database) {
- 
+for (var k in ini.database) { 
     if (models[ini.database[k].model]===undefined) {
       models[ini.database[k].model] = require('./models/'+ini.database[k].model);
     }
-
     database[k] = new models[ini.database[k].model]( ini.database[k] );
 }
-
-
-
-
-
-
-
-
-/*
-
-
-database.projects = new mysqlm({host:'173.194.250.90',user:'cb',password:'cb',database:'cb',table:'projects2',index:['id']});
-database.structure = new mysqlm({host:'173.194.250.90',user:'cb',password:'cb',database:'cb',table:'structure',index:['id']});
-database.floor = new mysqlm({host:'173.194.250.90',user:'cb',password:'cb',database:'cb',table:'floor',index:['id']});
-database.devices = new mysqlm({host:'173.194.250.90',user:'cb',password:'cb',database:'cb',table:'devices',index:['id']});
-
-*/
-
-
 
 
 function parseCookies (rc) {

@@ -27,5 +27,16 @@ module.exports = {
             index:['label']
         }
 
+    },
+    databasex: {
+        name: {
+            model: 'mysql',
+            host:'173.194.250.90',
+            user:'cb',
+            password:'cb',
+            database:'cb',
+            table:'name',
+            index:['id']
+        }
     }
 }
