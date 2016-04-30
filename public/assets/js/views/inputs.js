@@ -38,6 +38,12 @@ var inputsColumns=[
 ];
 
 var inputsData={};
+var outputsData={};
+var scriptsData={};
+
+var inputsDataArray=[];
+var outputsDataArray=[];
+var scriptsDataArray=[];
 
 /*
  *callingControl
@@ -77,6 +83,23 @@ var inputsTableDraw = function(data) {
 }
 
 
+var drawScriptSelects = function(selection) {
+	
+	$(selection+' select.scripts').each(function(){
+		
+		var id=$(this).attr('rel');
+		var select=$(this);
+		
+		
+		console.log(id);
+		$.smekta_file('views/smekta/script-select.html',{scripts:scriptsDataArray},this,function(){
+			select.val(id);
+			select.select2();
+		});
+	});
+}
+
+
 $(function(){
 	
 	/*
@@ -98,10 +121,29 @@ $(function(){
 	 *request to get all inputs
 	 */
 	websocket.emit('db-get','inputs');
-
-	
 	websocket.once('inputs-all', function(data) {
 		inputsTableDraw(data.data);
+	});
+	
+	websocket.emit('db-get','outputs');
+	websocket.once('outputs-all', function(data) {
+		for (var i=0; i<data.data.length; i++) {
+			var idx=data.data[i].device+','+data.data[i].address;
+			
+			outputsData[idx]=data.data[i];
+		}
+	});
+
+	websocket.emit('db-get','scripts');
+	websocket.once('scripts-all', function(data) {
+
+		scriptsDataArray=data.data;
+		for (var i=0; i<data.data.length; i++) {
+			var idx=data.data[i].id;
+			
+			scriptsData[idx]=data.data[i];
+			
+		}
 	});
 	
 	
@@ -134,9 +176,19 @@ $(function(){
 				/*
 				 *draw edit body
 				 */
-				$.smekta_file('views/smekta/input-actions.html',inputsData[id],'#edit-input .modal-body',function(){
-					$('#edit-input .modal-body .translate').translate();
 				
+				if (actions.actions===undefined) {
+                    actions.actions=[];
+                }
+				console.log(actions);
+				$.smekta_file('views/smekta/input-actions.html',actions,'#edit-input .modal-body',function(){
+					$('#edit-input .modal-body .translate').translate();
+					
+					$('#edit-input .modal-body li').append('<a class="x">×</a>');
+					$('#edit-input .modal-body li a.x').click( function(){
+						$(this).parent().remove();
+					});
+					drawScriptSelects('#edit-input .modal-body');
 				});
 
 				
