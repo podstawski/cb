@@ -1,20 +1,26 @@
+var states={};
 
 module.exports = function(socket,session) {
 
-    var states={};
-    
+
+    for (var k in states) {
+        socket.emit('bus',k,states[k]);
+    }
+
     socket.on('bus',function(addr,state) {
         var a=addr.replace('I','O');
         
+        
         if (states[a]===undefined) {
             if (a==addr) {
-                states[a]=state;
+                states[a]=parseInt(state);
             } else {
                 states[a]=0;
             }
         }
         
-        var state2=state==0?1:0;
+        
+        var state2=states[a]==0?1:0;    
         states[a]=state2;
 
         

@@ -16,6 +16,14 @@ var callingDevice;
 var lastDraggedElement=null;
 
 
+var modalCleanup = function() {
+    lastDraggedElement=null;
+    $('#edit-element').removeClass('aside-edit');
+    $('#edit-element').removeClass('device-edit');
+    $('#edit-element').removeClass('control-edit');
+};
+
+
 var zoomContainer = function(z) {
     
     var sel='#floor-container .draggable-container';
@@ -224,7 +232,8 @@ var drawDeviceElement = function(data,element) {
             lastDraggedElement={id: data.id,element: $(this)};
         },
         dblclickDevice: function(e) {
-            $('#edit-element').addClass('devicel-edit');
+            modalCleanup();
+            $('#edit-element').addClass('device-edit');
             $('#edit-element .modal-header input').val(data.name);
             $('#edit-element').attr('rel',data.id);
             $('#edit-element .modal-body').html('');
@@ -239,6 +248,7 @@ var drawDeviceElement = function(data,element) {
             });
         },
         dblclickControl: function (e) {
+            modalCleanup();
             $('#edit-element').addClass('control-edit');
             $('#edit-element .modal-header input').val(data.name);
             $('#edit-element').attr('rel',data.id);
@@ -484,6 +494,7 @@ var drawAsideDevices = function() {
         device.dom().dblclick(function(){
             
             callingDevice=device;
+            modalCleanup();
             $('#edit-element').addClass('aside-edit');
             $('#edit-element input[name="name"]').val(device.attr('name'));                        
             $('#edit-element').modal('show');
@@ -625,6 +636,7 @@ $(function(){
                 data.img=uploadImage;
             }
             
+            
             for (var i=0; i<elements.length; i++) {
                 if (elements[i].id==data.id && elements[i].device!==undefined) {
                     for(var k in data) {
@@ -640,6 +652,7 @@ $(function(){
 
         if ($('#edit-element').hasClass('control-edit')) {
 
+            
             for (var i=0; i<elements.length; i++) {
                 if (elements[i].id==data.id && elements[i].device!==undefined) {
                     data.controls = elements[i].data.controls;
@@ -657,9 +670,7 @@ $(function(){
             websocket.emit('db-save','floor',data);
         }
         
-        $('#edit-element').removeClass('aside-edit');
-        $('#edit-element').removeClass('device-edit');
-        $('#edit-element').removeClass('control-edit');
+
         
     });
     

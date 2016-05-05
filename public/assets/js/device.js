@@ -8,6 +8,7 @@ var Device = function(device) {
     _attr.label=device.label || '';
     
     var redraw=function(ratio) {
+        
         _dom.attr('title',_attr.name);
         _dom.find('.device-label').text(_attr.label);
         
