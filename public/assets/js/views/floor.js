@@ -224,6 +224,7 @@ var drawDeviceElement = function(data,element) {
             lastDraggedElement={id: data.id,element: $(this)};
         },
         dblclickDevice: function(e) {
+            $('#edit-element').addClass('devicel-edit');
             $('#edit-element .modal-header input').val(data.name);
             $('#edit-element').attr('rel',data.id);
             $('#edit-element .modal-body').html('');
@@ -234,6 +235,31 @@ var drawDeviceElement = function(data,element) {
             calculateLabelForSmekta(data,data.type);
             
             $.smekta_file('views/smekta/floor-device.html',data,'#edit-element .modal-body',function(){
+                $('#edit-element .modal-body .translate').translate();
+            });
+        },
+        dblclickControl: function (e) {
+            $('#edit-element').addClass('control-edit');
+            $('#edit-element .modal-header input').val(data.name);
+            $('#edit-element').attr('rel',data.id);
+            $('#edit-element .modal-body').html('');
+            $('#edit-element').modal('show');
+            
+            var cdata={};
+            for (var i=0; i<this.attributes.length; i++) {
+				var attr=this.attributes[i].nodeName;
+				var val=this.attributes[i].nodeValue;
+                cdata[attr]=val;
+            }
+            
+            var children=$(this).parent().children();
+            for (var i=0; i<children.length; i++) {
+                if (children[i]==this) {
+                    $('#edit-element').attr('rel2',i);
+                }
+            }
+            
+            $.smekta_file('views/smekta/floor-control.html',cdata,'#edit-element .modal-body',function(){
                 $('#edit-element .modal-body .translate').translate();
             });
         }
@@ -577,13 +603,24 @@ $(function(){
 		$('#edit-element').modal('hide');
 		var data={id:$('#edit-element').attr('rel')};
 		
-		$('#edit-element input,#edit-element select').each(function(){
-			data[$(this).attr('name')]=$(this).val();
-		});
+        if (!$('#edit-element').hasClass('control-edit')) {
+            $('#edit-element input,#edit-element select').each(function(){
+                data[$(this).attr('name')]=$(this).val();
+            });
+        }
         
-        
-        if (!$('#edit-element').hasClass('aside-edit')) {
+        if ($('#edit-element').hasClass('aside-edit')) {
+            for (var k in data) {
+                if (data[k]!==undefined) {
+                    callingDevice.attr(k,data[k]);
+                }
+            }
+            callingDevice.draw();
+        }
             
+            
+        if ($('#edit-element').hasClass('device-edit')) {
+                
             if (uploadImage!=null) {
                 data.img=uploadImage;
             }
@@ -598,18 +635,31 @@ $(function(){
             }
             
             websocket.emit('db-save','floor',data);            
-        } else {
-            for (var k in data) {
-                if (data[k]!==undefined) {
-                    callingDevice.attr(k,data[k]);
-                }
-            }
-            callingDevice.draw();
-        }
+        } 
         
 
+        if ($('#edit-element').hasClass('control-edit')) {
+
+            for (var i=0; i<elements.length; i++) {
+                if (elements[i].id==data.id && elements[i].device!==undefined) {
+                    data.controls = elements[i].data.controls;
+                    break;
+                }
+            }
+
+            var rel2=$('#edit-element').attr('rel2');
+            
+            $('#edit-element input,#edit-element select').each(function(){
+                data.controls[rel2][$(this).attr('name')]=$(this).val();
+            });
+            
+            
+            websocket.emit('db-save','floor',data);
+        }
         
         $('#edit-element').removeClass('aside-edit');
+        $('#edit-element').removeClass('device-edit');
+        $('#edit-element').removeClass('control-edit');
         
     });
     

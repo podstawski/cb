@@ -17,6 +17,14 @@ var Device = function(device) {
         _dom.find('.device-label').height(ratio*_default.labelHeight);
         _dom.find('.device-label').css('font-size',(ratio*_default.fontSize)+'px');
  
+        for (var i=0; i<device.controls.length; i++) {
+            var dst=_dom.find('div[_idx="'+i+'"]');
+       
+            for (var k in device.controls[i]) {
+                dst.attr(k,device.controls[i][k]);
+            }
+        }
+ 
         return _self;
     }
     
@@ -37,7 +45,7 @@ var Device = function(device) {
         
         if (device.controls!==undefined) {
             for (var i=0;i<device.controls.length;i++) {
-                var control=$('<div class="control-'+device.controls[i].type+'"></div>');
+                var control=$('<div _idx="'+i+'" class="control-'+device.controls[i].type+'"></div>');
                 controls.append(control);
                 control.css({
                     left: (device.controls[i].x*100)+'%',
@@ -51,10 +59,9 @@ var Device = function(device) {
                     if (device.controls[i].simage!==undefined && device.controls[i].simage.length>0) {
                         slider+='<img src="'+device.controls[i].simage+'"/>';
                     } else {
-                        slider+='<div/>';
+                        slider+='<div class="progressbar"/>';
                     }
                     control.append(slider);
-                    console.log(device.controls[i]);
                 }
                 
                 
@@ -69,6 +76,13 @@ var Device = function(device) {
                     control.attr('style',style);
                 }
                 
+                for(var k in device.controls[i]) {
+                    control.attr(k,device.controls[i][k]);
+                }
+                
+                
+                if (options.dblclickControl!==undefined) control.dblclick(options.dblclickControl);
+        
                 
             }
             

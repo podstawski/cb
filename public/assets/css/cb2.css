@@ -61,11 +61,15 @@
     margin: 4% 4% 0 4%;
     height: 70%;
     border: #909090 solid;
-    border-width: 1%;
+    border-width: 0.1px;
 }
 
 .device-container .controls-container .control-slider img {
     position: absolute;
     height: 100%;
     left: 40%;
+}
+
+.control-edit .btn-danger {
+    display: none;
 }
