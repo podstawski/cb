@@ -80,6 +80,20 @@ var Device = function(device) {
                     control.attr(k,device.controls[i][k]);
                 }
                 
+                if (device.controls[i].haddr!==undefined && device.controls[i].haddr.length>0
+                    && device.controls[i].mdown!==undefined && device.controls[i].mdown.length>0) {
+                    control.addClass('mouseclick');
+                    control.mousedown(function() {
+                        var lastIdx=$(this).attr('_counter');
+                        if (lastIdx===undefined) lastIdx=0;
+                        var mdown=$(this).attr('mdown').split(',');
+                        var size=mdown.length;
+                        var state=mdown[lastIdx%size];
+                        lastIdx++;
+                        $(this).attr('_counter',lastIdx);
+                        busSend($(this).attr('haddr'),state);
+                    });
+                }
                 
                 if (options.dblclickControl!==undefined) control.dblclick(options.dblclickControl);
         
@@ -102,8 +116,22 @@ var Device = function(device) {
         _default.devicesHeight=controls.height();
         
         _default.fontSize=parseInt(label.css('font-size'));
-    }
+    };
     
+    
+    var setState = function(haddr,state) {
+        $('.draggable-container div[haddr="'+haddr+'"]').each(function(){
+  
+            var sstyle=$(this).attr('sstyle');
+            var oldState=$(this).attr('state');
+            if (sstyle!==undefined && sstyle.match('__STATE__')) {
+                var style=$(this).attr('style');
+                style=style.replace(sstyle.replace('__STATE__',oldState),'');
+                style+=';'+sstyle.replace('__STATE__',state);
+                $(this).attr('style',style);
+            }
+        });
+    };
     
     return {
 
@@ -123,6 +151,9 @@ var Device = function(device) {
             if (val==null) return _attr[attr];
             _attr[attr]=val;
             return _self;
+        },
+        state: function(haddr,state) {
+            setState(haddr,state);
         }
         
     }

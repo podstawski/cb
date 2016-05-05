@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var crypto = require('crypto');
 var admin = require('./admin');
+var server = require('./simpleserver');
 var fs = require('fs');
 
 var ini = require('./ini.default.js');
@@ -97,7 +98,8 @@ var initApp = function() {
             
             
         console.log('Hello new client',hash); 
-        admin(socket,session,hash,database,'./public');  
+        admin(socket,session,hash,database,'./public');
+        server(socket,session);
       
     });
 

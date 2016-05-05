@@ -404,8 +404,8 @@ $(function(){
 		/*
 		 *count inputs and outputs
 		 */
-		data.inputs=$('#edit-device .device-controls-container div[type="input"]').length;
-		data.outputs=$('#edit-device .device-controls-container div[type="output"]').length;
+		data.inputs=$('#edit-device .device-controls-container div:not([estate=""])').length;
+		data.outputs=$('#edit-device .device-controls-container div:not([state=""])').length;
 	
 		/*
 		 *send save request

@@ -64,6 +64,12 @@ var pageCleanup=function() {
 
 }
 
+var busSend=function(haddr,state) {
+   console.log('busSend(','"'+haddr+'",',state,')');
+   websocket.emit('bus',haddr,state);
+   return 'OK';
+}
+
 
 $(function(){
     

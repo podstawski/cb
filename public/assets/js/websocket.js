@@ -117,3 +117,11 @@ websocket.on('files', function(dir,data) {
 });
 
 
+websocket.on('bus',function(haddr,state) {
+    console.log('busReceive',haddr,'=',state);
+
+    if (Device!==undefined) {
+        new Device({name:''}).state(haddr,state);
+    }
+});
+

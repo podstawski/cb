@@ -64,6 +64,10 @@
     border-width: 0.1px;
 }
 
+.device-container .controls-container .mouseclick {
+    cursor: crosshair;
+}
+
 .device-container .controls-container .control-slider img {
     position: absolute;
     height: 100%;
