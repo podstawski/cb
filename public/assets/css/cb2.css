@@ -1,3 +1,24 @@
+
+#edit-device .modal-body .device-controls-container .slider {
+    position: relative;
+    margin: 8% 4% 0 4%;
+    height: 60%;
+    border: 1px #909090 solid;
+    border-radius: 1%;
+}
+
+#edit-device .modal-body .device-controls-container .slider img {
+    position: absolute;
+    top: -20%;
+    height: 140%
+}
+
+#edit-device .modal-body .device-controls-container .slider .progressbar {
+    height: 100%;
+    background-color: #ffff00;
+}
+
+
 #edit-input .modal-body {
     padding-top: 0;
 }
@@ -28,4 +49,23 @@
 
 #edit-input .modal-body .row ul li .select2-container {
     width: 100%;
+}
+
+
+.device-container .controls-container .control-slider {
+    position: relative;
+}
+
+.device-container .controls-container .control-slider .slider {
+    width: 90%;
+    margin: 4% 4% 0 4%;
+    height: 70%;
+    border: #909090 solid;
+    border-width: 1%;
+}
+
+.device-container .controls-container .control-slider img {
+    position: absolute;
+    height: 100%;
+    left: 40%;
 }

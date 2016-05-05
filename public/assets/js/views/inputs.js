@@ -44,6 +44,7 @@ var scriptsData={};
 var inputsDataArray=[];
 var outputsDataArray=[];
 var scriptsDataArray=[];
+var inputsoutputsDataArray=[];
 
 /*
  *callingControl
@@ -74,7 +75,10 @@ var inputsTableDraw = function(data) {
 		
 		inputsData[data[i].DT_RowId] = data[i];
 		
+		data[i].id='input,'+data[i].device+','+data[i].address;
 	}
+	
+	inputsDataArray=data.data;
 	
 	
 	datatable.clear();
@@ -90,9 +94,23 @@ var drawScriptSelects = function(selection) {
 		var id=$(this).attr('rel');
 		var select=$(this);
 		
-		
-		console.log(id);
 		$.smekta_file('views/smekta/script-select.html',{scripts:scriptsDataArray},this,function(){
+			select.val(id);
+			select.select2();
+		});
+	});
+}
+
+var drawIOSelects = function(selection) {
+	
+	$(selection+' select.inputoroutput').each(function(){
+		
+		var id=$(this).attr('rel');
+		var select=$(this);
+		
+		
+
+		$.smekta_file('views/smekta/inputoutput-select.html',{inputs:inputsDataArray,outputs:outputsDataArray},this,function(){
 			select.val(id);
 			select.select2();
 		});
@@ -127,11 +145,16 @@ $(function(){
 	
 	websocket.emit('db-get','outputs');
 	websocket.once('outputs-all', function(data) {
+		
+		
 		for (var i=0; i<data.data.length; i++) {
 			var idx=data.data[i].device+','+data.data[i].address;
 			
 			outputsData[idx]=data.data[i];
+			data.data[i].id='outputs,'+idx;
 		}
+		
+		outputsDataArray=data.data;
 	});
 
 	websocket.emit('db-get','scripts');
@@ -189,6 +212,8 @@ $(function(){
 						$(this).parent().remove();
 					});
 					drawScriptSelects('#edit-input .modal-body');
+					drawIOSelects('#edit-input .modal-body');
+					
 				});
 
 				

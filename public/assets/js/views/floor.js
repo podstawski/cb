@@ -13,6 +13,7 @@ var dotH=16;
 var uploadImage=null;
 var originalSvgWidth;
 var callingDevice;
+var lastDraggedElement=null;
 
 
 var zoomContainer = function(z) {
@@ -220,6 +221,7 @@ var drawDeviceElement = function(data,element) {
             d.point=calculatePoint(p);
 
             websocket.emit('db-save','floor',d);
+            lastDraggedElement={id: data.id,element: $(this)};
         },
         dblclickDevice: function(e) {
             $('#edit-element .modal-header input').val(data.name);
@@ -510,7 +512,31 @@ $(function(){
             }
         });
 
-
+        $(document).keydown(function(e){
+            
+            if (lastDraggedElement && e.which>=37 && e.which<=40) {
+                event.preventDefault();
+                
+                var d={id:lastDraggedElement.id};
+                var p=lastDraggedElement.element.position();
+                
+                if (p.top>0 || p.left>0) {
+                
+                    
+                    if (e.which==37) p.left=Math.round(p.left)-1;
+                    if (e.which==38) p.top=Math.round(p.top)-1;
+                    if (e.which==39) p.left=Math.round(p.left)+1;
+                    if (e.which==40) p.top=Math.round(p.top)+1;
+                    
+                    
+                    p.x=p.left;
+                    p.y=p.top;
+                    d.point=calculatePoint(p);
+        
+                    websocket.emit('db-save','floor',d);
+                }
+            }
+        });
         
     }
 
@@ -519,6 +545,8 @@ $(function(){
             lastDragEvent=Date.now();
         }
     });
+    
+
     
     
     /*

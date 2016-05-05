@@ -23,7 +23,7 @@ var Device = function(device) {
     var draw = function(options,ratio) {
         if (ratio==null) ratio=1;
         if (_dom!=null) return redraw(ratio);
-  
+          
         
         _dom=$('<div class="device-container" title="'+_attr.name+'"></div>');
         _parent.append(_dom);
@@ -37,7 +37,7 @@ var Device = function(device) {
         
         if (device.controls!==undefined) {
             for (var i=0;i<device.controls.length;i++) {
-                var control=$('<div></div>');
+                var control=$('<div class="control-'+device.controls[i].type+'"></div>');
                 controls.append(control);
                 control.css({
                     left: (device.controls[i].x*100)+'%',
@@ -45,6 +45,18 @@ var Device = function(device) {
                     width: (device.controls[i].w*100)+'%',
                     height: (device.controls[i].h*100)+'%'
                 });
+                
+                if (device.controls[i].type=='slider') {
+                    var slider='<div class="slider"/>';
+                    if (device.controls[i].simage!==undefined && device.controls[i].simage.length>0) {
+                        slider+='<img src="'+device.controls[i].simage+'"/>';
+                    } else {
+                        slider+='<div/>';
+                    }
+                    control.append(slider);
+                    console.log(device.controls[i]);
+                }
+                
                 
                 if ( device.controls[i].sstyle!==undefined) {
                     var style=control.attr('style');

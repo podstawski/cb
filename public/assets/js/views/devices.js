@@ -134,20 +134,59 @@ var addControl = function (obj,data) {
 
 var controlsStyle=function() {
 
-	$('#edit-device .device-controls-container div').each( function(){
+	$('#edit-device .device-controls-container div[type]').each( function(){
 		var addr=$(this).attr('addr');
 		if (addr!==undefined && addr.length>0) {
             $(this).find('span.name').html(addr);
         }
 		var style=$(this).attr('sstyle');
 		var state=$(this).attr('state');
+		var simage=$(this).attr('simage');
+
+		var min=$(this).attr('min');
+		var max=$(this).attr('max');	
+		
+		var originalStyle=$(this).attr('style');
+		var destStyle=originalStyle;
+		
+		var type=$(this).attr('type');
 		
 		
-		if (style!==undefined && state!==undefined) {
+		if (type=='inout' && style!==undefined && state!==undefined) {
             style=style.replace('__STATE__',state);
-			var originalStyle=$(this).attr('style');
-			$(this).attr('style',originalStyle+';'+style);
+			destStyle+=';'+style;
+			
+			$(this).attr('style',destStyle);
         }
+		
+		if (type=='slider' && style!==undefined && state!==undefined && min!==undefined && max!=undefined) {
+			var prc=Math.round(100*(parseFloat(state)-parseFloat(min))/(parseFloat(max)-parseFloat(min)));
+			var rprc=100-prc;
+			style=style.replace('__PRC__',prc+'%').replace('__RPRC__',rprc+'%');
+
+			
+			
+			$(this).find('.slider').remove();
+			$(this).find('span.name').remove();
+			
+			var img='';
+			if (simage!==undefined && simage.length>0) {
+				var imgstyle='left:'+prc+'%';
+				if (prc>90) {
+                    imgstyle='right: 0';
+                }
+                img='<img style="'+style+';'+imgstyle+'" src="'+simage+'"/>'
+            } else {
+				img='<div style="'+style+'; width:'+prc+'%" class="progressbar">';
+			}
+			
+			$(this).append('<div class="slider">'+img+'</div>');
+		}
+		
+		
+		
+
+		
 	});
 }
 
@@ -167,10 +206,11 @@ var displayFileList = function(dir,files) {
 			 */
 			$('.uploaded-images').click(function() {
 				var img=$(this).parent().find('input').val();
+				$('#edit-control .slider #simage').val('images/'+dir+'/'+img);
 				if ($('#edit-control #state').val().length>0) {
                     img=img.replace($('#edit-control #state').val(),'__STATE__');
                 }
-				$('#edit-control #sstyle').val('background-image: url(images/'+dir+'/'+img+')')
+				$('#edit-control .inout #sstyle').val('background-image: url(images/'+dir+'/'+img+')')
 			});
 			
 			/*
@@ -347,6 +387,14 @@ $(function(){
 			control.w=($(this).width()+2)/$(this).parent().width();
 			control.h=($(this).height()+2)/$(this).parent().height();
 			
+			// double border
+			if ($(this).width()+4 == $(this).parent().width() ) {
+                control.w=1;
+            }		
+			if ($(this).height()+4 == $(this).parent().height() ) {
+                control.h=1;
+            }
+	
 					
 			controls.push(control);
 		});

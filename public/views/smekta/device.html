@@ -20,7 +20,7 @@
             <div class="col-md-9">
                 <input type="text" id="tags" [if:tags]value="[tags]"[endif:tags] name="tags"
                        class="form-control translate" placeholder="Tags">
-                <span class="help-block translate">Comma separated tags equivalent to icon names</span>
+                <span class="help-block translate">Space separated tags equivalent to icon names</span>
             </div>
         </div>
         
@@ -37,11 +37,11 @@
                     <div class="col-md-10 device-controls-container"></div>
                     
                     <div class="col-md-2 device-controls-label-container">
-                        <div class="drg" type="input">
-                            <span class="name">in</span>
+                        <div class="drg" type="inout">
+                            <span class="name">inout</span>
                         </div>
-                        <div class="drg" type="output">
-                            <span class="name">out</span>
+                        <div class="drg" type="slider">
+                            <span class="name">slider</span>
                         </div>
                         
                     </div>
