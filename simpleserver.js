@@ -1,13 +1,21 @@
 var states={};
 
-module.exports = function(socket,session) {
-
-
+var allStates=function(socket) {
     for (var k in states) {
         socket.emit('bus',k,states[k]);
-    }
+    }    
+}
+
+module.exports = function(socket,session) {
 
     socket.on('bus',function(addr,state) {
+        
+        if (addr==null) {
+            allStates(socket);
+            return;
+        }
+        
+        
         var a=addr.replace('I','O');
         
         

@@ -420,6 +420,8 @@ var floorDrawElements=function(data) {
     
     moveElements();
     
+    websocket.emit('bus');
+    
 }
 
 var calculateLabelForSmekta = function(data,symbol) {
