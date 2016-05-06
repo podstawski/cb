@@ -33,18 +33,22 @@
             <div class="col-md-9">
                 <input type="text" id="sstyle" name="sstyle"
                        [if:sstyle]value="[sstyle]"[endif:sstyle]
-                       [if:!sstyle]value="-webkit-filter: grayscale(__RPRC__)"[endif:!sstyle]
                        class="form-control translate" placeholder="Style line">
-                <span class="help-block translate">CSS style depanding of state, use __STATE__, __PRC__ or __RPRC__ for evaluation</span>
+                <div class="help-block">
+                    CSS style depanding on state, e.g. <br/>
+                    <a href="#">background-color: rbg(__STATE__,__STATE__,__STATE__)</a><br/>
+                    <a href="#">-webkit-filter: grayscale(__RPRC__%)</a><br/>
+                    <a href="#">width: __PRC__%</a><br/>
+                </div>        
             </div>
         </div>
 
         <div class="form-group row">
-            <label class="col-md-3 form-control-label translate" for="simage">Indicator image</label>
+            <label class="col-md-3 form-control-label translate" for="simage">Slider image</label>
             <div class="col-md-9">
                 <input type="text" id="simage" [if:simage]value="[simage]"[endif:simage] name="simage"
-                       class="form-control translate" placeholder="Indication image">
-                <span class="help-block translate">Icon inside the slider button</span>
+                       class="form-control translate" placeholder="Slider image">
+                <span class="help-block translate">If omitted device will work as progressbar</span>
             </div>
         </div>
 

@@ -121,6 +121,14 @@ var addControl = function (obj,data) {
 				var val=obj[0].attributes[i].nodeValue;
 				$('#edit-control input[name="'+attr+'"]').val(val);
 			}
+			
+			$('#edit-control .modal-body .help-block a').click(function(){
+				var dst=$(this).parent().parent().find('input');
+				var val=dst.val();
+				if (val.length>0) val+=';';
+				val+=$(this).text();
+				dst.val(val);
+			});
 		});
 	});
 	

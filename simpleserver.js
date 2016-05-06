@@ -29,6 +29,17 @@ module.exports = function(socket,session) {
         
         
         var state2=states[a]==0?1:0;    
+        
+        
+        if (parseInt(state)>1) {
+            state2=parseInt(state);
+        }
+        
+        if (addr.indexOf('IM')>=0) {
+            state2=parseInt(state);
+        }
+        
+        
         states[a]=state2;
 
         

@@ -56,30 +56,21 @@ var Device = function(device) {
                 });
                 
                 if (device.controls[i].type=='slider') {
-                    var slider='<div class="slider"/>';
+                    var slider='<div class="slider">';
                     if (device.controls[i].simage!==undefined && device.controls[i].simage.length>0) {
-                        slider+='<img src="'+device.controls[i].simage+'"/>';
+                        slider+='</div><img class="dst" src="'+device.controls[i].simage+'"/>';
                     } else {
-                        slider+='<div class="progressbar"/>';
+                        slider+='<div class="progressbar dst"></div></div>';
                     }
                     control.append(slider);
                 }
                 
                 
-                if ( device.controls[i].sstyle!==undefined) {
-                    var style=control.attr('style');
-                    var sstyle=device.controls[i].sstyle;
-                    if(device.controls[i].state!==undefined && device.controls[i].state.length>0) {
-                        sstyle=sstyle.replace('__STATE__',device.controls[i].state);
-                    }
-                    
-                    style+=';'+sstyle;
-                    control.attr('style',style);
-                }
-                
                 for(var k in device.controls[i]) {
                     control.attr(k,device.controls[i][k]);
                 }
+                
+                setStateElement(control);
                 
                 if (device.controls[i].haddr!==undefined && device.controls[i].haddr.length>0
                     && device.controls[i].mdown!==undefined && device.controls[i].mdown.length>0) {
@@ -119,18 +110,53 @@ var Device = function(device) {
         _default.fontSize=parseInt(label.css('font-size'));
     };
     
+    var setStateElement = function(element,state) {
+        if (state==null) state=element.attr('state');
+
+        if (element.attr('min')!==undefined
+            && element.attr('min').length>0
+            && parseInt(state)<parseInt(element.attr('min'))
+        ) return;
+        
+        if (element.attr('max')!==undefined
+            && element.attr('max').length>0
+            && parseInt(state)>parseInt(element.attr('max'))
+        ) return;
+        
+        
+        var sstyle=element.attr('sstyle');
+        var oldState=element.attr('state');
+        var min=element.attr('min')||0;
+        var max=element.attr('max')||1;
+        
+        var oldPrc=Math.round(100*(parseFloat(oldState)-parseFloat(min))/(parseFloat(max)-parseFloat(min)));
+		var oldRprc=100-oldPrc;
+
+        var prc=Math.round(100*(parseFloat(state)-parseFloat(min))/(parseFloat(max)-parseFloat(min)));
+		var rprc=100-prc;
+
+        if (sstyle!==undefined && sstyle.length>0) {
+            
+            var dst=element.find('.dst');
+            if (dst.length==0) dst=element;
+            
+            var style=dst.attr('style');
+            if (style===undefined) style='';
+            style=style.replace(sstyle.replace(/__STATE__/g,oldState),'');
+            style=style.replace(sstyle.replace(/__PRC__/g,oldPrc),'');
+            style=style.replace(sstyle.replace(/__RPRC__/g,oldRprc),'');
+            
+            
+            if (style.length>0) style+='; ';
+            style+=sstyle.replace(/__STATE__/g,state).replace(/__PRC__/g,prc).replace(/__RPRC__/g,rprc);
+            dst.attr('style',style);
+        }
+        
+    };
     
     var setState = function(haddr,state) {
         $('.draggable-container div[haddr="'+haddr+'"]').each(function(){
-  
-            var sstyle=$(this).attr('sstyle');
-            var oldState=$(this).attr('state');
-            if (sstyle!==undefined && sstyle.match('__STATE__')) {
-                var style=$(this).attr('style');
-                style=style.replace(sstyle.replace('__STATE__',oldState),'');
-                style+=';'+sstyle.replace('__STATE__',state);
-                $(this).attr('style',style);
-            }
+            setStateElement($(this),state);
         });
     };
     
