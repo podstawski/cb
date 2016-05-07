@@ -2,7 +2,7 @@ var states={};
 
 var allStates=function(socket) {
     for (var k in states) {
-        socket.emit('bus',k,states[k]);
+        if (states[k]>0) socket.emit('bus',k,states[k]);
     }    
 }
 
